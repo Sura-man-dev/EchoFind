@@ -1,0 +1,81 @@
+.page {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.card {
+  width: min(100%, 420px);
+  background: white;
+  border-radius: 24px;
+  padding: 28px 24px;
+  box-shadow: 0 20px 60px rgba(37, 99, 235, 0.12);
+  border: 1px solid #e5edf9;
+}
+
+.card h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.card p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.form input {
+  min-height: 46px;
+  border: 1px solid #dbe1ea;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form button {
+  min-height: 46px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.notice {
+  color: #16a34a;
+  font-size: 13px;
+}

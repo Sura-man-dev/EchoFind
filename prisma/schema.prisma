@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String?              @unique
+  emailVerified       DateTime?
+  image               String?
+  passwordHash        String?
+  role                String               @default("user")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  accounts            Account[]
+  lostReports         LostReport[]
+  foundReports        FoundReport[]
+  passwordResetTokens PasswordResetToken[]
+  notifications       Notification[]
+}
+
+model LostReport {
+  id              String   @id @default(cuid())
+  userId          String?
+  itemName        String
+  category        String
+  imageUrls       String[] @default([])
+  brand           String?
+  color           String?
+  description     String
+  lostLocation    String
+  lostDate        DateTime
+  lostTime        String?
+  locationDetails String?
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  status          String   @default("open")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model FoundReport {
+  id              String   @id @default(cuid())
+  userId          String?
+  itemName        String
+  category        String
+  imageUrls       String[] @default([])
+  brand           String?
+  color           String?
+  description     String
+  foundLocation   String
+  foundDate       DateTime
+  foundTime       String?
+  locationDetails String?
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  status          String   @default("open")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ItemMatch {
+  id            String   @id @default(cuid())
+  lostReportId  String
+  foundReportId String
+  score         Int
+  reasons       String[] @default([])
+  status        String   @default("suggested")
+  createdAt     DateTime @default(now())
+  confirmedAt   DateTime?
+
+  @@unique([lostReportId, foundReportId])
+  @@index([status])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String    @default("match")
+  title     String
+  message   String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  email      String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([expiresAt])
+}

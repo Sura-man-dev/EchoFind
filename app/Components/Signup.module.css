@@ -1,0 +1,334 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modalCard {
+  position: relative;
+  width: min(100%, 560px);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 30px 34px 28px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 28px 90px rgba(37, 99, 235, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #5b6b85;
+  cursor: pointer;
+}
+
+.brandMark {
+  width: 26px;
+  height: 26px;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+}
+
+.brandHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoBadge {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef4ff;
+  color: #2d78f4;
+  font-size: 16px;
+}
+
+.logoLockup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.logoText {
+  font-size: 32px;
+  font-weight: 800;
+  color: #2d78f4;
+}
+
+.logoSubtext {
+  font-size: 13px;
+  color: #90a1b8;
+}
+
+.heading {
+  text-align: left;
+}
+
+.heading h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.heading p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #98a2b3;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #344054;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #dbe1ea;
+  background: white;
+  box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inputWrap:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+}
+
+.inputWrap svg {
+  color: #98a2b3;
+  font-size: 14px;
+}
+
+.inputWrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #111827;
+}
+
+.inputWrap input::placeholder {
+  color: #98a2b3;
+}
+
+.visibilityBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #98a2b3;
+  cursor: pointer;
+}
+
+.strengthWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 16px;
+}
+
+.strengthLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #22a866;
+}
+
+.strengthBars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.strengthBar {
+  height: 3px;
+  border-radius: 999px;
+  background: #dbe7df;
+}
+
+.strengthBarActive {
+  background: #22c55e;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #667085;
+}
+
+.checkboxRow input {
+  margin-top: 2px;
+}
+
+.checkboxRow a {
+  color: #2d78f4;
+  text-decoration: none;
+}
+
+.inlineLink {
+  width: fit-content;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.errorText {
+  font-size: 13px;
+  color: #dc2626;
+  margin: 0;
+}
+
+.noticeText {
+  font-size: 13px;
+  color: #16a34a;
+  margin: 0;
+}
+
+.primaryBtn {
+  min-height: 48px;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 24px rgba(37, 99, 235, 0.2);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid #eaecf0;
+}
+
+.divider span {
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 0 10px;
+}
+
+.socialRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.socialBtn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  border: 1px solid #dbe1ea;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+  cursor: pointer;
+}
+
+.footerText {
+  text-align: center;
+  font-size: 13px;
+  color: #667085;
+}
+
+.switchBtn {
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .modalOverlay {
+    padding: 12px;
+  }
+
+  .modalCard {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .fieldGrid,
+  .socialRow {
+    grid-template-columns: 1fr;
+  }
+}
