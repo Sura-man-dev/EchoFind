@@ -1,9 +1,9 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  padding: 20px;
-  background: rgba(15, 23, 42, 0.68);
-  backdrop-filter: blur(12px);
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,42 +12,43 @@
 
 .modalCard {
   position: relative;
-  width: min(100%, 560px);
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  padding: 30px 34px 28px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 28px 90px rgba(37, 99, 235, 0.18);
+  width: min(100%, 460px);
+  max-height: min(820px, calc(100dvh - 48px));
+  overflow-y: auto;
+  background: #ffffff;
+  padding: 34px;
+  border-radius: 22px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 28px 90px rgba(15, 23, 42, 0.24);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
+}
+
+.signupCard {
+  width: min(100%, 620px);
 }
 
 .closeBtn {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 32px;
-  height: 32px;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 50%;
   background: #f1f5f9;
   color: #5b6b85;
   cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
 }
 
-.brandMark {
-  width: 26px;
-  height: 26px;
-  margin: 0 auto;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #3b82f6, #2563eb);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-weight: 700;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+.closeBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .brandHeader {
@@ -55,18 +56,20 @@
   justify-content: center;
   align-items: center;
   gap: 10px;
+  padding-right: 22px;
 }
 
 .logoBadge {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #eef4ff;
   color: #2d78f4;
   font-size: 16px;
+  overflow: hidden;
 }
 
 .logoLockup {
@@ -77,30 +80,32 @@
 }
 
 .logoText {
-  font-size: 32px;
+  font-size: 25px;
   font-weight: 800;
   color: #2d78f4;
+  letter-spacing: -0.04em;
 }
 
 .logoSubtext {
-  font-size: 13px;
-  color: #90a1b8;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .heading {
-  text-align: left;
+  text-align: center;
 }
 
 .heading h2 {
-  font-size: 28px;
-  margin-bottom: 8px;
+  font-size: clamp(24px, 4vw, 29px);
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
   color: #111827;
 }
 
 .heading p {
   font-size: 14px;
   line-height: 1.5;
-  color: #98a2b3;
+  color: #64748b;
 }
 
 .form {
@@ -112,7 +117,8 @@
 .fieldGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 16px;
+  min-width: 0;
 }
 
 .field {
@@ -121,7 +127,7 @@
   gap: 8px;
 }
 
-.field span {
+.field > span {
   font-size: 12px;
   font-weight: 700;
   color: #344054;
@@ -131,18 +137,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 48px;
-  padding: 0 14px;
-  border-radius: 10px;
-  border: 1px solid #dbe1ea;
-  background: white;
+  min-height: 50px;
+  padding: 0 13px;
+  border-radius: 12px;
+  border: 1px solid #d5deeb;
+  background: #ffffff;
   box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .inputWrap:focus-within {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
 .inputWrap svg {
@@ -152,6 +158,7 @@
 
 .inputWrap input {
   flex: 1;
+  min-width: 0;
   border: none;
   outline: none;
   background: transparent;
@@ -171,6 +178,13 @@
   background: transparent;
   color: #98a2b3;
   cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.visibilityBtn:hover {
+  color: #2563eb;
+  background: #eff6ff;
 }
 
 .strengthWrap {
@@ -183,7 +197,18 @@
 .strengthLabel {
   font-size: 11px;
   font-weight: 600;
-  color: #22a866;
+}
+
+.strengthWeak {
+  color: #dc2626;
+}
+
+.strengthMedium {
+  color: #d97706;
+}
+
+.strengthStrong {
+  color: #059669;
 }
 
 .strengthBars {
@@ -207,7 +232,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 12px;
+  font-size: 12.5px;
   line-height: 1.5;
   color: #667085;
 }
@@ -217,8 +242,9 @@
 }
 
 .checkboxRow a {
-  color: #2d78f4;
-  text-decoration: none;
+  color: #1d4ed8;
+  font-weight: 600;
+  text-underline-offset: 2px;
 }
 
 .inlineLink {
@@ -234,29 +260,48 @@
 
 .errorText {
   font-size: 13px;
-  color: #dc2626;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
   margin: 0;
 }
 
 .noticeText {
   font-size: 13px;
-  color: #16a34a;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 10px 12px;
   margin: 0;
 }
 
 .primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   min-height: 48px;
-  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   border: none;
-  border-radius: 16px;
+  border-radius: 12px;
   color: white;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 14px 24px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.22);
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
 }
 
 .primaryBtn:disabled {
-  opacity: 0.75;
+  opacity: 0.65;
   cursor: wait;
 }
 
@@ -284,7 +329,7 @@
 
 .socialRow {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
 }
 
@@ -294,13 +339,20 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 14px;
-  border: 1px solid #dbe1ea;
-  background: white;
+  border-radius: 12px;
+  border: 1px solid #d5deeb;
+  background: #ffffff;
   font-size: 13px;
   font-weight: 600;
   color: #344054;
   cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.socialBtn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
 }
 
 .footerText {
@@ -315,20 +367,37 @@
   color: #2563eb;
   font-weight: 700;
   cursor: pointer;
+  padding: 2px;
+}
+
+.switchBtn:hover,
+.inlineLink:hover {
+  color: #1e40af;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.modalCard :is(button, a, input):focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.45);
+  outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
   .modalOverlay {
+    align-items: flex-start;
     padding: 12px;
   }
 
   .modalCard {
-    padding: 22px 18px;
-    border-radius: 16px;
+    max-height: calc(100dvh - 24px);
+    padding: 26px 20px 22px;
+    border-radius: 18px;
+    gap: 18px;
   }
 
   .fieldGrid,
   .socialRow {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 }

@@ -454,8 +454,15 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  width: 100%;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border-subtle, #e2e8f0);
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
   cursor: pointer;
   transition: background 150ms ease;
   position: relative;
@@ -468,6 +475,20 @@
 
 .notificationItem:hover {
   background: var(--slate-50, #f8fafc);
+}
+
+.notificationItem:focus-visible {
+  z-index: 1;
+  outline-offset: -3px;
+}
+
+.notificationError {
+  margin: 0;
+  padding: 10px 16px;
+  color: var(--danger-700, #be123c);
+  background: var(--danger-50, #fff1f2);
+  border-bottom: 1px solid var(--danger-200, #fecdd3);
+  font-size: 12.5px;
 }
 
 .notificationUnread {
@@ -816,6 +837,17 @@
   color: var(--danger-700, #be123c);
 }
 
+.profileLogoutBtn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.profileLogoutError {
+  margin: 4px 12px 0;
+  color: var(--danger-700, #be123c);
+  font-size: 12px;
+}
+
 /* ==========================================================================
    Workspace Body & Sidebar
    ========================================================================== */
@@ -1096,4 +1128,3 @@
     width: calc(100vw - 32px);
   }
 }
-

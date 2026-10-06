@@ -13,6 +13,8 @@ export default function Navbar() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState("signup");
   const [authUser, setAuthUser] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   const isDashboardRoute = ["/", "/report", "/foundreport", "/foundItems", "/reports", "/admin/matches"].includes(pathname);
 
@@ -53,16 +55,14 @@ export default function Navbar() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError("");
     try {
-      await signOut({
-        redirect: false,
-      });
-
-      setAuthUser(null);
-      setShowAuthModal(false);
-      router.refresh();
+      await signOut({ redirectTo: "/" });
     } catch (error) {
       console.error("Failed to log out", error);
+      setLogoutError("Unable to log out. Please try again.");
+      setIsLoggingOut(false);
     }
   };
 
@@ -96,8 +96,8 @@ export default function Navbar() {
         {authUser ? (
           <>
             <div className={styles.userPill}>Hi, {authUser.name?.split(" ")[0] || "there"}</div>
-            <button className={styles.login} onClick={handleLogout}>
-              Log Out
+            <button className={styles.login} type="button" onClick={handleLogout} disabled={isLoggingOut}>
+              {isLoggingOut ? "Logging out..." : "Log Out"}
             </button>
           </>
         ) : (
@@ -117,6 +117,7 @@ export default function Navbar() {
           onModeChange={setAuthMode}
           onAuthSuccess={handleAuthSuccess}
         />
+        {logoutError ? <p className={styles.logoutError} role="alert">{logoutError}</p> : null}
       </div>
     </div>
   );

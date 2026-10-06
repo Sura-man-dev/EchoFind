@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyAdmins } from "@/lib/notifications";
 
 const lostReportSchema = z.object({
   itemName: z.string().trim().min(2, "Item name is required."),
@@ -51,12 +52,23 @@ export async function POST(request) {
 
     const payload = result.data;
 
-    const report = await prisma.lostReport.create({
-      data: {
-        ...payload,
-        lostDate: new Date(payload.lostDate),
-        userId: session?.user?.id ?? null,
-      },
+    const report = await prisma.$transaction(async (transaction) => {
+      const createdReport = await transaction.lostReport.create({
+        data: {
+          ...payload,
+          lostDate: new Date(payload.lostDate),
+          userId: session?.user?.id ?? null,
+        },
+      });
+
+      await notifyAdmins(transaction, {
+        type: "lost",
+        title: "New lost item reported",
+        message: `A new lost item report was submitted: ${createdReport.itemName}.`,
+        excludeUserId: session?.user?.id,
+      });
+
+      return createdReport;
     });
 
     return NextResponse.json(report, { status: 201 });

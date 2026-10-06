@@ -20,9 +20,9 @@ export async function GET() {
   } catch (error) {
     console.error("Session lookup failed", error);
 
-    return NextResponse.json({
-      authenticated: false,
-      user: null,
-    });
+    return NextResponse.json(
+      { error: "Unable to load the current session." },
+      { status: 500 }
+    );
   }
 }

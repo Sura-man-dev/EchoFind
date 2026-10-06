@@ -38,20 +38,23 @@ export async function POST(request) {
       create: { lostReportId, foundReportId, score: Math.round(score), reasons, status: "confirmed", confirmedAt: new Date() },
     });
 
+    const recipientIds = [...new Set([lostReport.userId, foundReport.userId].filter(Boolean))];
+    const notified = recipientIds.length > 0;
+
     await prisma.$transaction([
       prisma.lostReport.update({ where: { id: lostReportId }, data: { status: "matched" } }),
       prisma.foundReport.update({ where: { id: foundReportId }, data: { status: "matched" } }),
-      ...(lostReport.userId ? [prisma.notification.create({
-        data: {
-          userId: lostReport.userId,
+      ...(notified ? [prisma.notification.createMany({
+        data: recipientIds.map((userId) => ({
+          userId,
           type: "match",
-          title: "Your lost item may have been found",
-          message: `A possible match was confirmed for ${lostReport.itemName}. Check your reports for the next steps.`,
-        },
+          title: "A possible item match was confirmed",
+          message: `A match was confirmed between "${lostReport.itemName}" and "${foundReport.itemName}". Check your reports for next steps.`,
+        })),
       })] : []),
     ]);
 
-    return NextResponse.json({ match, notified: Boolean(lostReport.userId) });
+    return NextResponse.json({ match, notified });
   } catch (error) {
     console.error("Failed to confirm item match", error);
     return NextResponse.json({ error: "Unable to confirm this match." }, { status: 500 });

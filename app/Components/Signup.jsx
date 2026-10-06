@@ -5,14 +5,17 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
+  FaArrowRight,
   FaEye,
   FaEyeSlash,
+  FaFacebook,
+  FaGithub,
   FaGoogle,
   FaLock,
   FaRegEnvelope,
+  FaTimes,
   FaUser,
 } from "react-icons/fa";
-import { SiApple } from "react-icons/si";
 import styles from "./Signup.module.css";
 
 const initialFormState = {
@@ -25,7 +28,8 @@ const initialFormState = {
 
 const socialProviders = [
   { id: "google", label: "Google", icon: FaGoogle },
-  { id: "apple", label: "Apple", icon: SiApple },
+  { id: "github", label: "GitHub", icon: FaGithub },
+  { id: "facebook", label: "Facebook", icon: FaFacebook },
 ];
 
 async function loadSessionUser() {
@@ -33,6 +37,11 @@ async function loadSessionUser() {
     cache: "no-store",
   });
   const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Unable to load your account session.");
+  }
+
   return data.user ?? null;
 }
 
@@ -90,6 +99,32 @@ export default function SignupModal({
     };
   }, [show]);
 
+  useEffect(() => {
+    if (!show) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setForm(initialFormState);
+        setError("");
+        setNotice("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        onClose?.();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [show, onClose]);
+
   if (!show) {
     return null;
   }
@@ -128,11 +163,14 @@ export default function SignupModal({
       redirect: false,
     });
 
-    if (result?.error) {
+    if (!result?.ok || result.error) {
       throw new Error("Invalid email or password.");
     }
 
     const user = await loadSessionUser();
+    if (!user) {
+      throw new Error("You are signed in, but your session could not be loaded. Please try again.");
+    }
     resetState();
     onAuthSuccess?.(user);
     window.location.assign("/");
@@ -203,9 +241,13 @@ export default function SignupModal({
       return;
     }
 
-    await signIn(providerId, {
-      callbackUrl: "/",
-    });
+    try {
+      setIsSubmitting(true);
+      await signIn(providerId, { redirectTo: "/" });
+    } catch (providerError) {
+      setError(providerError.message || `Unable to sign in with ${label}.`);
+      setIsSubmitting(false);
+    }
   };
 
   const modalTitle = isSignup
@@ -222,9 +264,15 @@ export default function SignupModal({
 
   return (
     <div className={styles.modalOverlay} onClick={closeModal}>
-      <div className={styles.modalCard} onClick={(event) => event.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={closeModal} aria-label="Close">
-          x
+      <div
+        className={`${styles.modalCard} ${isSignup ? styles.signupCard : ""}`}
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+      >
+        <button type="button" className={styles.closeBtn} onClick={closeModal} aria-label="Close dialog">
+          <FaTimes />
         </button>
 
         <div className={styles.brandHeader}>
@@ -238,7 +286,7 @@ export default function SignupModal({
         </div>
 
         <div className={styles.heading}>
-          <h2>{modalTitle}</h2>
+          <h2 id="auth-modal-title">{modalTitle}</h2>
           <p>{modalText}</p>
         </div>
 
@@ -252,6 +300,7 @@ export default function SignupModal({
                   <input
                     type="text"
                     name="name"
+                    autoComplete="name"
                     placeholder="John Doe"
                     value={form.name}
                     onChange={handleChange}
@@ -267,6 +316,7 @@ export default function SignupModal({
                   <input
                     type="email"
                     name="email"
+                    autoComplete="email"
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={handleChange}
@@ -282,6 +332,7 @@ export default function SignupModal({
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
+                    autoComplete="new-password"
                     placeholder="********"
                     value={form.password}
                     onChange={handleChange}
@@ -297,7 +348,17 @@ export default function SignupModal({
                   </button>
                 </div>
                 <div className={styles.strengthWrap} aria-hidden="true">
-                  <span className={styles.strengthLabel}>{passwordStrength.label}</span>
+                  <span
+                    className={`${styles.strengthLabel} ${
+                      passwordStrength.level <= 1
+                        ? styles.strengthWeak
+                        : passwordStrength.level < 4
+                          ? styles.strengthMedium
+                          : styles.strengthStrong
+                    }`}
+                  >
+                    {passwordStrength.label}
+                  </span>
                   <div className={styles.strengthBars}>
                     {[0, 1, 2, 3].map((index) => (
                       <span
@@ -318,6 +379,7 @@ export default function SignupModal({
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
+                    autoComplete="new-password"
                     placeholder="********"
                     value={form.confirmPassword}
                     onChange={handleChange}
@@ -345,6 +407,7 @@ export default function SignupModal({
                   <input
                     type="email"
                     name="email"
+                    autoComplete="email"
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={handleChange}
@@ -361,6 +424,7 @@ export default function SignupModal({
                     <input
                       type={showPassword ? "text" : "password"}
                       name="password"
+                      autoComplete="current-password"
                       placeholder="********"
                       value={form.password}
                       onChange={handleChange}
@@ -387,6 +451,7 @@ export default function SignupModal({
                 name="acceptedTerms"
                 checked={form.acceptedTerms}
                 onChange={handleChange}
+                required
               />
               <span>
                 I agree to the <a href="#contact">Terms of Service</a> and{" "}
@@ -405,8 +470,8 @@ export default function SignupModal({
             </button>
           ) : null}
 
-          {error ? <p className={styles.errorText}>{error}</p> : null}
-          {notice ? <p className={styles.noticeText}>{notice}</p> : null}
+          {error ? <p className={styles.errorText} role="alert">{error}</p> : null}
+          {notice ? <p className={styles.noticeText} role="status">{notice}</p> : null}
 
           <button className={styles.primaryBtn} type="submit" disabled={isSubmitting}>
             {isSubmitting
@@ -415,27 +480,29 @@ export default function SignupModal({
                 : isForgotPassword
                   ? "Sending Link..."
                   : "Logging In..."
-              : isSignup
-                ? "Create Account ->"
-                : isForgotPassword
-                  ? "Send Reset Link ->"
-                  : "Log In ->"}
+              : (
+                  <>
+                    {isSignup ? "Create Account" : isForgotPassword ? "Send Reset Link" : "Log In"}
+                    <FaArrowRight aria-hidden="true" />
+                  </>
+                )}
           </button>
         </form>
 
-        {isForgotPassword ? null : (
+        {!isForgotPassword && socialProviders.some(({ id }) => configuredProviders?.[id]) ? (
           <>
             <div className={styles.divider}>
               <span>or continue with</span>
             </div>
 
             <div className={styles.socialRow}>
-              {socialProviders.map(({ id, label, icon: Icon }) => (
+              {socialProviders.filter(({ id }) => configuredProviders?.[id]).map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
                   className={styles.socialBtn}
                   onClick={() => handleProviderSignIn(id, label)}
+                  disabled={isSubmitting}
                 >
                   <Icon />
                   {label}
@@ -443,7 +510,7 @@ export default function SignupModal({
               ))}
             </div>
           </>
-        )}
+        ) : null}
 
         <p className={styles.footerText}>
           {isSignup

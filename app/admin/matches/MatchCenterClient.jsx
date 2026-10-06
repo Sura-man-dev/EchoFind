@@ -73,8 +73,8 @@ export default function MatchCenterPage() {
       setSuggestions((current) => current.filter((item) => item !== suggestion));
       setNotice(
         data.notified
-          ? "Match confirmed and the lost-item owner was notified."
-          : "Match confirmed. The report has no linked account to notify."
+          ? "Match confirmed. The people linked to these reports were notified."
+          : "Match confirmed. Neither report is linked to an account, so no notification was sent."
       );
     } catch (confirmError) {
       setError(confirmError.message);

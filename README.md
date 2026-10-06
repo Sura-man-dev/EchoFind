@@ -42,6 +42,7 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `AUTH_SECRET` | Yes | Secret used by Auth.js |
 | `NEXTAUTH_URL` | Yes | App URL, such as `http://localhost:3000` |
+| `AUTH_TRUST_HOST` | Self-hosted production | Set to `true` when deployed behind a trusted proxy; Vercel sets this automatically |
 | `ADMIN_EMAIL` | Yes | Email address assigned the initial admin role |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No | Google sign-in credentials |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | No | GitHub sign-in credentials |

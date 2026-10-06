@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { signOut } from "next-auth/react";
 import {
   FaBell,
@@ -78,7 +78,10 @@ export default function DashboardShell({ children }) {
   const [openPanel, setOpenPanel] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationError, setNotificationError] = useState("");
   const [sessionUser, setSessionUser] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   const sidebarCollapsed = useSyncExternalStore(
     sidebarPreference.subscribe,
@@ -91,20 +94,62 @@ export default function DashboardShell({ children }) {
     window.dispatchEvent(new Event("echofind-sidebar-change"));
   };
 
-  useEffect(() => {
-    fetch("/api/auth/session", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((data) => setSessionUser(data.user ?? null))
-      .catch(() => {});
+  const loadNotifications = useCallback(async () => {
+    try {
+      const response = await fetch("/api/notifications", { cache: "no-store" });
+      const data = await response.json();
 
-    fetch("/api/notifications", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((data) => {
-        setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
-        setUnreadCount(data.unreadCount || 0);
-      })
-      .catch(() => {});
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to load notifications.");
+      }
+
+      setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+      setUnreadCount(Number.isInteger(data.unreadCount) ? data.unreadCount : 0);
+      setNotificationError("");
+      return true;
+    } catch (error) {
+      console.error("Failed to load notifications", error);
+      setNotificationError(error.message || "Unable to load notifications.");
+      return false;
+    }
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSession = async () => {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to load your session.");
+        }
+        if (isMounted) {
+          setSessionUser(data.user ?? null);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard session", error);
+      }
+    };
+
+    void loadSession();
+    void loadNotifications();
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        void loadNotifications();
+      }
+    };
+
+    const intervalId = window.setInterval(refreshWhenVisible, 15000);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [loadNotifications]);
 
   // Close panels on click outside or Escape
   useEffect(() => {
@@ -134,9 +179,15 @@ export default function DashboardShell({ children }) {
   }, []);
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.refresh();
-    router.push("/");
+    setIsLoggingOut(true);
+    setLogoutError("");
+    try {
+      await signOut({ redirectTo: "/" });
+    } catch (error) {
+      console.error("Failed to log out", error);
+      setLogoutError("Unable to log out. Please try again.");
+      setIsLoggingOut(false);
+    }
   };
 
   const handleSearch = (event) => {
@@ -147,22 +198,64 @@ export default function DashboardShell({ children }) {
 
   const markAllNotificationsRead = async () => {
     try {
-      await fetch("/api/notifications", { method: "PATCH" });
-      setUnreadCount(0);
-      setNotifications((prev) =>
-        prev.map((item) => ({ ...item, readAt: item.readAt || new Date().toISOString() }))
-      );
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markAll: true }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to update notifications.");
+      }
+      await loadNotifications();
     } catch (error) {
       console.error("Failed to mark notifications read", error);
+      setNotificationError(error.message || "Unable to update notifications.");
+    }
+  };
+
+  const markNotificationRead = async (notification) => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId: notification.id }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to update this notification.");
+      }
+
+      if (!notification.readAt) {
+        const readAt = new Date().toISOString();
+        setNotifications((current) =>
+          current.map((item) => item.id === notification.id ? { ...item, readAt } : item)
+        );
+        setUnreadCount((current) => Math.max(0, current - 1));
+      }
+      setNotificationError("");
+    } catch (error) {
+      console.error("Failed to mark notification read", error);
+      setNotificationError(error.message || "Unable to update this notification.");
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    setOpenPanel(null);
+    if (!notification.readAt) {
+      await markNotificationRead(notification);
+    }
+
+    if (notification.type === "match" && isAdmin) {
+      router.push("/admin/matches");
+    } else {
+      router.push("/reports");
     }
   };
 
   const toggleNotifications = () => {
     const nextPanel = openPanel === "notifications" ? null : "notifications";
     setOpenPanel(nextPanel);
-    if (nextPanel === "notifications" && unreadCount > 0) {
-      markAllNotificationsRead();
-    }
   };
 
   const isAdmin = sessionUser?.role === "admin";
@@ -250,6 +343,8 @@ export default function DashboardShell({ children }) {
               type="button"
               className={`${styles.iconButton} ${openPanel === "notifications" ? styles.iconButtonActive : ""}`}
               aria-label="View notifications"
+              aria-expanded={openPanel === "notifications"}
+              aria-controls="dashboard-notifications"
               onClick={toggleNotifications}
             >
               <FaBell />
@@ -261,7 +356,7 @@ export default function DashboardShell({ children }) {
             </button>
 
             {openPanel === "notifications" && (
-              <div className={`${styles.popover} ${styles.notificationsPopover}`} role="dialog" aria-label="Notifications panel">
+              <div id="dashboard-notifications" className={`${styles.popover} ${styles.notificationsPopover}`} role="dialog" aria-label="Notifications panel">
                 <div className={styles.popoverHeader}>
                   <div className={styles.popoverHeaderTitle}>
                     <strong>Notifications</strong>
@@ -271,7 +366,7 @@ export default function DashboardShell({ children }) {
                       <span className={styles.allCaughtUpBadge}>All caught up</span>
                     )}
                   </div>
-                  {notifications.length > 0 && (
+                  {unreadCount > 0 && (
                     <button
                       type="button"
                       className={styles.markReadBtn}
@@ -281,6 +376,10 @@ export default function DashboardShell({ children }) {
                     </button>
                   )}
                 </div>
+
+                {notificationError ? (
+                  <p className={styles.notificationError} role="alert">{notificationError}</p>
+                ) : null}
 
                 <div className={styles.notificationsList}>
                   {notifications.length > 0 ? (
@@ -301,21 +400,11 @@ export default function DashboardShell({ children }) {
                       }
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={notification.id}
                           className={`${styles.notificationItem} ${isUnread ? styles.notificationUnread : ""}`}
-                          onClick={() => {
-                            setOpenPanel(null);
-                            if (notification.type === "match") {
-                              if (isAdmin) {
-                                router.push("/admin/matches");
-                              } else {
-                                router.push("/reports");
-                              }
-                            } else {
-                              router.push("/reports");
-                            }
-                          }}
+                          onClick={() => handleNotificationClick(notification)}
                         >
                           <div className={`${styles.notificationIconWrap} ${iconToneClass}`}>
                             <IconComponent />
@@ -330,7 +419,7 @@ export default function DashboardShell({ children }) {
                             <p>{notification.message}</p>
                           </div>
                           {isUnread && <span className={styles.unreadDot} />}
-                        </div>
+                        </button>
                       );
                     })
                   ) : (
@@ -338,8 +427,12 @@ export default function DashboardShell({ children }) {
                       <div className={styles.emptyIconCircle}>
                         <FaBell />
                       </div>
-                      <strong>No notifications yet</strong>
-                      <p>You&apos;re completely up to date. We&apos;ll notify you when an item match or status update happens.</p>
+                      <strong>{notificationError ? "Notifications unavailable" : "No notifications yet"}</strong>
+                      <p>
+                        {notificationError
+                          ? "Please try again in a moment."
+                          : "You're up to date. New reports and confirmed matches will appear here."}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -494,10 +587,12 @@ export default function DashboardShell({ children }) {
                   type="button"
                   className={styles.profileLogoutBtn}
                   onClick={handleLogout}
+                  disabled={isLoggingOut}
                 >
                   <FiLogOut />
-                  <span>Log out</span>
+                  <span>{isLoggingOut ? "Logging out..." : "Log out"}</span>
                 </button>
+                {logoutError ? <p className={styles.profileLogoutError} role="alert">{logoutError}</p> : null}
               </div>
             )}
           </div>
