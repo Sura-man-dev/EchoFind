@@ -7,6 +7,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 9999;
 }
 
@@ -14,7 +16,11 @@
   position: relative;
   width: min(100%, 460px);
   max-height: min(820px, calc(100dvh - 48px));
+  min-height: 0;
+  flex: 0 1 auto;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: #ffffff;
   padding: 34px;
   border-radius: 22px;
@@ -116,7 +122,7 @@
 
 .fieldGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   min-width: 0;
 }
@@ -125,6 +131,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .field > span {
@@ -384,20 +391,39 @@
 
 @media (max-width: 600px) {
   .modalOverlay {
-    align-items: flex-start;
-    padding: 12px;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   }
 
   .modalCard {
-    max-height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     padding: 26px 20px 22px;
     border-radius: 18px;
     gap: 18px;
   }
 
+  .inputWrap input {
+    font-size: 16px;
+  }
+
   .fieldGrid,
   .socialRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
+  }
+}
+
+@media (max-height: 700px) {
+  .modalCard {
+    padding-top: 22px;
+    padding-bottom: 20px;
+    gap: 14px;
+  }
+
+  .form {
+    gap: 12px;
+  }
+
+  .inputWrap {
+    min-height: 46px;
   }
 }

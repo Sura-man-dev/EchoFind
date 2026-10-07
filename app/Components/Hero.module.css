@@ -490,17 +490,87 @@
   .heroBox {
     padding: 40px;
   }
+
   .featuresGrid,
   .whyGrid {
     grid-template-columns: 1fr;
   }
+
   .aboutContent,
   .contactGrid {
     grid-template-columns: 1fr;
   }
+
   .ctaContainer {
     flex-direction: column;
     text-align: center;
     padding: 30px;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroWrapper {
+    padding: 16px 12px;
+  }
+
+  .heroBox {
+    min-height: 420px;
+    padding: 26px 18px;
+    border-radius: 22px;
+  }
+
+  .statusBadge {
+    font-size: 11px;
+    padding: 6px 12px;
+    margin-bottom: 16px;
+  }
+
+  .mainTitle {
+    font-size: clamp(30px, 10vw, 40px);
+  }
+
+  .subText {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .featuresSection,
+  .aboutSection,
+  .contactSection,
+  .whySection,
+  .ctaSection {
+    padding: 56px 18px;
+  }
+
+  .featuresSection h2,
+  .aboutContent h2,
+  .contactIntro h2,
+  .whySection h2,
+  .ctaText h2 {
+    font-size: clamp(24px, 8vw, 32px);
+  }
+
+  .featureCard,
+  .whyCard,
+  .aboutCard,
+  .contactCard {
+    padding: 22px 18px;
+  }
+
+  .ctaContainer {
+    padding: 24px 18px;
+  }
+
+  .ctaBtn {
+    width: 100%;
   }
 }

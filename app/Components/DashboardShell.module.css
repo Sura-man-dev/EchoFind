@@ -77,8 +77,8 @@
 }
 
 .logoIconWrap img {
-  width: 30px;
-  height: 30px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -784,6 +784,15 @@
   transform: translateX(2px);
 }
 
+.profileMenuItemActive {
+  background: var(--primary-50, #eff6ff);
+  color: var(--primary-700, #1d4ed8);
+}
+
+.profileMenuItemActive .menuItemIcon {
+  color: var(--primary-600, #2563eb);
+}
+
 .menuItemIcon {
   font-size: 14px;
   color: var(--slate-400, #94a3b8);
@@ -1073,34 +1082,73 @@
     padding: 18px 20px;
   }
 
-  .sidebarIsCollapsed .body {
-    grid-template-columns: 1fr;
-  }
-
   .sidebar {
-    position: static;
+    display: none;
   }
 
   .sidebarToggle {
-    display: inline-flex;
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
   .topbar {
-    gap: 12px;
-    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
     height: auto;
-    min-height: 64px;
-    flex-wrap: wrap;
-    padding-bottom: 10px;
+    min-height: 0;
+    padding: 8px 12px 10px;
+  }
+
+  .topbarLeft {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .logo {
+    min-width: 0;
+    gap: 7px;
+  }
+
+  .logoIconWrap {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .logoText {
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .topActions {
+    gap: 7px;
+  }
+
+  .actionDivider {
+    display: none;
+  }
+
+  .profileTrigger {
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    padding: 3px;
+  }
+
+  .profileTriggerInfo {
+    display: none;
   }
 
   .searchBox {
-    order: 3;
+    grid-column: 1 / -1;
     max-width: none;
     width: 100%;
-    margin-top: 4px;
+    min-width: 0;
+    margin: 0;
   }
 
   .quickReportLabel {
@@ -1115,16 +1163,46 @@
     display: none;
   }
 
-  .profileTrigger {
-    padding: 2px;
-  }
-
-  .chevron {
+  .searchShortcut {
     display: none;
   }
 
   .notificationsPopover {
     right: -50px;
     width: calc(100vw - 32px);
+  }
+
+  .profilePopover {
+    width: min(320px, calc(100vw - 24px));
+    max-height: calc(100dvh - 82px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .body {
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar {
+    gap: 8px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .topActions {
+    gap: 5px;
+  }
+
+  .quickReportBtn,
+  .iconButton {
+    width: 38px;
+    height: 38px;
+  }
+
+  .logoText {
+    font-size: 17px;
   }
 }

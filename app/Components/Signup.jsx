@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { createPortal } from "react-dom";
 import {
   FaArrowRight,
   FaEye,
@@ -60,10 +61,15 @@ export default function SignupModal({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [configuredProviders, setConfiguredProviders] = useState({});
+  const [isMounted, setIsMounted] = useState(false);
 
   const isSignup = mode === "signup";
   const isForgotPassword = mode === "forgot";
   const passwordStrength = getPasswordStrength(form.password);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!show) {
@@ -125,7 +131,7 @@ export default function SignupModal({
     };
   }, [show, onClose]);
 
-  if (!show) {
+  if (!show || !isMounted) {
     return null;
   }
 
@@ -262,7 +268,7 @@ export default function SignupModal({
       ? "Enter your email and we will send you a secure reset link."
       : "Log in to continue reporting and recovering lost items.";
 
-  return (
+  return createPortal((
     <div className={styles.modalOverlay} onClick={closeModal}>
       <div
         className={`${styles.modalCard} ${isSignup ? styles.signupCard : ""}`}
@@ -528,7 +534,7 @@ export default function SignupModal({
         </p>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 function getPasswordStrength(password) {

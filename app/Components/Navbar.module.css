@@ -41,6 +41,12 @@
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
 }
 
+.iconContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .text {
   font-size: 21px;
   font-weight: 800;
@@ -158,7 +164,47 @@
   .navbar {
     padding: 14px 20px;
   }
+
   .links {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    gap: 10px;
+    padding: 12px 14px;
+    align-items: center;
+  }
+
+  .logo {
+    min-width: 0;
+    flex-shrink: 0;
+  }
+
+  .iconContainer {
+    width: 32px;
+    height: 32px;
+  }
+
+  .text {
+    font-size: 18px;
+  }
+
+  .buttons {
+    gap: 8px;
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .login,
+  .signup {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .userPill {
     display: none;
   }
 }

@@ -108,7 +108,7 @@ export default function DashboardShell({ children }) {
       setNotificationError("");
       return true;
     } catch (error) {
-      console.error("Failed to load notifications", error);
+      console.warn("Notifications are unavailable; showing the in-app error state.", error);
       setNotificationError(error.message || "Unable to load notifications.");
       return false;
     }
@@ -456,6 +456,8 @@ export default function DashboardShell({ children }) {
               type="button"
               className={`${styles.profileTrigger} ${openPanel === "profile" ? styles.profileTriggerActive : ""}`}
               aria-label="User profile menu"
+              aria-expanded={openPanel === "profile"}
+              aria-controls="dashboard-profile-menu"
               onClick={() => setOpenPanel(openPanel === "profile" ? null : "profile")}
             >
               <div className={styles.avatarWrap}>
@@ -480,7 +482,7 @@ export default function DashboardShell({ children }) {
             </button>
 
             {openPanel === "profile" && (
-              <div className={`${styles.popover} ${styles.profilePopover}`} role="menu" aria-label="User account menu">
+              <div id="dashboard-profile-menu" className={`${styles.popover} ${styles.profilePopover}`} role="menu" aria-label="User account menu">
                 {/* Profile Card Header */}
                 <div className={styles.profileHeaderCard}>
                   <div className={styles.avatarLargeWrap}>
@@ -519,8 +521,17 @@ export default function DashboardShell({ children }) {
                 {/* Profile Navigation Links */}
                 <div className={styles.profileMenuLinks}>
                   <Link
+                    href="/"
+                    className={`${styles.profileMenuItem} ${pathname === "/" ? styles.profileMenuItemActive : ""}`}
+                    onClick={() => setOpenPanel(null)}
+                  >
+                    <FaHome className={styles.menuItemIcon} />
+                    <span>Home</span>
+                  </Link>
+
+                  <Link
                     href="/reports"
-                    className={styles.profileMenuItem}
+                    className={`${styles.profileMenuItem} ${pathname === "/reports" ? styles.profileMenuItemActive : ""}`}
                     onClick={() => setOpenPanel(null)}
                   >
                     <FaFileAlt className={styles.menuItemIcon} />
@@ -529,7 +540,7 @@ export default function DashboardShell({ children }) {
 
                   <Link
                     href="/report"
-                    className={styles.profileMenuItem}
+                    className={`${styles.profileMenuItem} ${pathname === "/report" ? styles.profileMenuItemActive : ""}`}
                     onClick={() => setOpenPanel(null)}
                   >
                     <FaPlus className={styles.menuItemIcon} />
@@ -538,7 +549,7 @@ export default function DashboardShell({ children }) {
 
                   <Link
                     href="/foundreport"
-                    className={styles.profileMenuItem}
+                    className={`${styles.profileMenuItem} ${pathname === "/foundreport" ? styles.profileMenuItemActive : ""}`}
                     onClick={() => setOpenPanel(null)}
                   >
                     <FaBoxOpen className={styles.menuItemIcon} />
@@ -547,7 +558,7 @@ export default function DashboardShell({ children }) {
 
                   <Link
                     href="/foundItems"
-                    className={styles.profileMenuItem}
+                    className={`${styles.profileMenuItem} ${pathname === "/foundItems" ? styles.profileMenuItemActive : ""}`}
                     onClick={() => setOpenPanel(null)}
                   >
                     <FaSearch className={styles.menuItemIcon} />
@@ -561,7 +572,7 @@ export default function DashboardShell({ children }) {
 
                       <Link
                         href="/admin/matches"
-                        className={styles.profileMenuItem}
+                        className={`${styles.profileMenuItem} ${pathname === "/admin/matches" ? styles.profileMenuItemActive : ""}`}
                         onClick={() => setOpenPanel(null)}
                       >
                         <FaRobot className={styles.menuItemIcon} />
@@ -570,7 +581,7 @@ export default function DashboardShell({ children }) {
 
                       <Link
                         href="/admin/users"
-                        className={styles.profileMenuItem}
+                        className={`${styles.profileMenuItem} ${pathname === "/admin/users" ? styles.profileMenuItemActive : ""}`}
                         onClick={() => setOpenPanel(null)}
                       >
                         <FaUser className={styles.menuItemIcon} />
