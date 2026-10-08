@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
+import MarketingChrome from "./Components/MarketingChrome";
 import { auth } from "@/auth";
 
 export const metadata = {
@@ -15,9 +16,17 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {showMarketingChrome ? <Navbar /> : null}
+        {showMarketingChrome ? (
+          <MarketingChrome>
+            <Navbar />
+          </MarketingChrome>
+        ) : null}
         {children}
-        {showMarketingChrome ? <Footer /> : null}
+        {showMarketingChrome ? (
+          <MarketingChrome>
+            <Footer />
+          </MarketingChrome>
+        ) : null}
       </body>
     </html>
   );

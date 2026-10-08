@@ -1,0 +1,84 @@
+.page {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  padding: 48px 24px;
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(59, 130, 246, 0.2), transparent 42%),
+    linear-gradient(135deg, #08152e 0%, #112b52 54%, #1e3a70 100%);
+}
+
+.backgroundGlow {
+  position: absolute;
+  z-index: -1;
+  top: 12%;
+  left: 50%;
+  width: min(780px, 90vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(191, 219, 254, 0.12);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 70px rgba(191, 219, 254, 0.025), 0 0 0 140px rgba(191, 219, 254, 0.02);
+}
+
+.intro {
+  width: min(100%, 540px);
+  padding: 0 8px;
+  color: #fff;
+  text-align: center;
+}
+
+.eyebrow {
+  margin-bottom: 18px;
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.intro h1 {
+  font-size: clamp(34px, 6vw, 58px);
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+}
+
+.description {
+  max-width: 460px;
+  margin: 20px auto 0;
+  color: #dbeafe;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.trustNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 26px;
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.trustDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+}
+
+@media (max-width: 520px) {
+  .page {
+    min-height: 100dvh;
+    padding: 32px 16px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+}

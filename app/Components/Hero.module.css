@@ -87,7 +87,8 @@
   gap: 14px;
 }
 
-.actions button {
+.actions button,
+.actions a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -98,6 +99,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -467,6 +469,9 @@
 }
 
 .ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: #ffffff;
   color: var(--primary-700, #1d4ed8);
   border: none;
@@ -478,6 +483,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   transition: all 180ms ease;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .ctaBtn:hover {

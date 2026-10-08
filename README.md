@@ -44,6 +44,8 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 | `NEXTAUTH_URL` | Yes | App URL, such as `http://localhost:3000` |
 | `AUTH_TRUST_HOST` | Self-hosted production | Set to `true` when deployed behind a trusted proxy; Vercel sets this automatically |
 | `ADMIN_EMAIL` | Yes | Email address assigned the initial admin role |
+| `IMAGEKIT_PRIVATE_KEY` | For image uploads | ImageKit private API key; keep it server-side and never expose it as a `NEXT_PUBLIC_` variable |
+| `IMAGEKIT_URL_ENDPOINT` | For ImageKit images | ImageKit URL endpoint, such as `https://ik.imagekit.io/your_imagekit_id` |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No | Google sign-in credentials |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | No | GitHub sign-in credentials |
 | `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | No | Facebook sign-in credentials |
@@ -63,7 +65,18 @@ npm start         # Serve the production build
 
 Configure the environment variables and PostgreSQL database in your hosting provider, then run `npx prisma migrate deploy` as part of deployment.
 
-Report image uploads currently write to `public/uploads/reports` on the app server. This is suitable for local development, but many deployment platforms use ephemeral or read-only filesystems. Before deploying image uploads to production, move them to persistent object storage and configure the app to use it.
+### ImageKit setup
+
+1. Create an ImageKit account and open its developer/API key settings.
+2. Copy the current **private key** into `IMAGEKIT_PRIVATE_KEY` in `.env.local` (and your hosting provider's server environment). It should start with `private_` and must come from the same ImageKit account as the URL endpoint. Never commit it or expose it in a `NEXT_PUBLIC_` variable.
+3. Copy the complete URL endpoint from that ImageKit account into `IMAGEKIT_URL_ENDPOINT`, replacing the example `your_imagekit_id` value. The endpoint looks like `https://ik.imagekit.io/<your_imagekit_id>`.
+4. Restart the development server or redeploy so Next.js picks up the endpoint. New report photos will upload to the ImageKit `/reports` folder.
+
+Image uploads require `IMAGEKIT_PRIVATE_KEY`; without it, the upload endpoint returns a configuration error. Existing reports that reference files under `/uploads/reports` continue to use those legacy local files.
+
+### Authentication
+
+The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. Password-reset pages and Auth.js/signup endpoints remain public so account access can be restored or created.
 
 ## Project structure
 

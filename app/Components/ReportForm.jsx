@@ -45,7 +45,30 @@ export default function ReportForm({ kind = "lost" }) {
   };
 
   const handleImageChange = (event) => {
-    const files = Array.from(event.target.files ?? []).slice(0, 5);
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length > 5) {
+      setSelectedImages([]);
+      setError("Choose up to 5 images.");
+      event.target.value = "";
+      return;
+    }
+
+    if (files.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
+      setSelectedImages([]);
+      setError("Only JPG, PNG, and WEBP images can be uploaded.");
+      event.target.value = "";
+      return;
+    }
+
+    if (files.some((file) => file.size > 5 * 1024 * 1024)) {
+      setSelectedImages([]);
+      setError("Each image must be 5MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    setError("");
     setSelectedImages(files);
   };
 
@@ -70,13 +93,22 @@ export default function ReportForm({ kind = "lost" }) {
           body: imageData,
         });
 
-        const uploadData = await uploadResponse.json();
+        const uploadData = await uploadResponse.json().catch(() => null);
 
         if (!uploadResponse.ok) {
-          throw new Error(uploadData.error || "Unable to upload report images.");
+          throw new Error(
+            uploadData?.error || `Image upload failed (HTTP ${uploadResponse.status}). Please try again.`
+          );
         }
 
-        imageUrls = uploadData.imageUrls ?? [];
+        if (
+          !Array.isArray(uploadData?.imageUrls) ||
+          uploadData.imageUrls.length !== selectedImages.length
+        ) {
+          throw new Error("The image upload did not finish correctly. Please try again.");
+        }
+
+        imageUrls = uploadData.imageUrls;
       }
 
       const payload = isFound

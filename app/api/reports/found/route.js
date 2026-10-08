@@ -13,15 +13,21 @@ const foundReportSchema = z.object({
   description: z.string().trim().min(8, "Please add a short description."),
   foundLocation: z.string().trim().min(2, "Location is required."),
   foundDate: z.string().min(1, "Date is required."),
-  foundTime: z.string().optional().or(z.literal("")),
-  locationDetails: z.string().trim().optional().or(z.literal("")),
-  contactName: z.string().trim().optional().or(z.literal("")),
-  contactEmail: z.string().trim().email("Enter a valid email address.").optional().or(z.literal("")),
-  contactPhone: z.string().trim().optional().or(z.literal("")),
+  foundTime: z.string().min(1, "Time is required."),
+  locationDetails: z.string().trim().min(3, "Additional location details are required."),
+  contactName: z.string().trim().min(2, "Full name is required."),
+  contactEmail: z.string().trim().email("Enter a valid email address."),
+  contactPhone: z.string().trim().min(7, "Enter a valid phone number."),
 });
 
 export async function GET() {
   try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "You must be signed in." }, { status: 401 });
+    }
+
     const reports = await prisma.foundReport.findMany({
       orderBy: {
         createdAt: "desc",
@@ -39,6 +45,11 @@ export async function GET() {
 export async function POST(request) {
   try {
     const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "You must be signed in." }, { status: 401 });
+    }
+
     const body = await request.json();
     const result = foundReportSchema.safeParse(body);
 
@@ -57,7 +68,7 @@ export async function POST(request) {
         data: {
           ...payload,
           foundDate: new Date(payload.foundDate),
-          userId: session?.user?.id ?? null,
+          userId: session.user.id,
         },
       });
 
@@ -65,7 +76,7 @@ export async function POST(request) {
         type: "found",
         title: "New found item reported",
         message: `A new found item report was submitted: ${createdReport.itemName}.`,
-        excludeUserId: session?.user?.id,
+        excludeUserId: session.user.id,
       });
 
       return createdReport;

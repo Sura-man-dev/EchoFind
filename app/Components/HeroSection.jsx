@@ -1,4 +1,5 @@
 import styles from "./Hero.module.css";
+import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import {
   FaBolt,
@@ -33,16 +34,16 @@ const Hero = () => {
 
             <div className={styles.actions}>
               
-              <button className={styles.primaryBtn}>
+              <Link className={styles.primaryBtn} href="/report">
                 <FaPlusCircle style={{ marginRight: "8px" }} />
                 Report an Item
-              </button>
+              </Link>
               
 
-              <button className={styles.secondaryBtn}>
+              <Link className={styles.secondaryBtn} href="/foundItems">
                 <FaSearch style={{ marginRight: "8px" }} />
                 Search Items
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -188,7 +189,7 @@ const Hero = () => {
           </div>
 
           <div className={styles.ctaAction}>
-            <button className={styles.ctaBtn}>Get Started</button>
+            <Link className={styles.ctaBtn} href="/register">Get Started</Link>
           </div>
         </div>
       </section>

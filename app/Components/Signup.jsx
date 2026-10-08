@@ -49,6 +49,7 @@ async function loadSessionUser() {
 export default function SignupModal({
   show,
   mode = "signup",
+  dismissible = true,
   onClose,
   onModeChange,
   onAuthSuccess,
@@ -114,7 +115,7 @@ export default function SignupModal({
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
+      if (dismissible && event.key === "Escape") {
         setForm(initialFormState);
         setError("");
         setNotice("");
@@ -129,7 +130,7 @@ export default function SignupModal({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [show, onClose]);
+  }, [show, onClose, dismissible]);
 
   if (!show || !isMounted) {
     return null;
@@ -179,7 +180,7 @@ export default function SignupModal({
     }
     resetState();
     onAuthSuccess?.(user);
-    window.location.assign("/");
+    window.location.assign(getPostAuthRedirect());
   };
 
   const handleSubmit = async (event) => {
@@ -249,7 +250,7 @@ export default function SignupModal({
 
     try {
       setIsSubmitting(true);
-      await signIn(providerId, { redirectTo: "/" });
+      await signIn(providerId, { redirectTo: getPostAuthRedirect() });
     } catch (providerError) {
       setError(providerError.message || `Unable to sign in with ${label}.`);
       setIsSubmitting(false);
@@ -269,7 +270,10 @@ export default function SignupModal({
       : "Log in to continue reporting and recovering lost items.";
 
   return createPortal((
-    <div className={styles.modalOverlay} onClick={closeModal}>
+    <div
+      className={styles.modalOverlay}
+      onClick={dismissible ? closeModal : undefined}
+    >
       <div
         className={`${styles.modalCard} ${isSignup ? styles.signupCard : ""}`}
         onClick={(event) => event.stopPropagation()}
@@ -277,9 +281,11 @@ export default function SignupModal({
         aria-modal="true"
         aria-labelledby="auth-modal-title"
       >
-        <button type="button" className={styles.closeBtn} onClick={closeModal} aria-label="Close dialog">
-          <FaTimes />
-        </button>
+        {dismissible ? (
+          <button type="button" className={styles.closeBtn} onClick={closeModal} aria-label="Close dialog">
+            <FaTimes />
+          </button>
+        ) : null}
 
         <div className={styles.brandHeader}>
           <div className={styles.logoBadge}>
@@ -535,6 +541,19 @@ export default function SignupModal({
       </div>
     </div>
   ), document.body);
+}
+
+function getPostAuthRedirect() {
+  const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+
+  if (!callbackUrl) {
+    return "/";
+  }
+
+  const destination = new URL(callbackUrl, window.location.origin);
+  return destination.origin === window.location.origin
+    ? `${destination.pathname}${destination.search}${destination.hash}`
+    : "/";
 }
 
 function getPasswordStrength(password) {

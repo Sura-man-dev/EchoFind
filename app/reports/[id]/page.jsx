@@ -34,13 +34,22 @@ export default function ReportDetailPage() {
       {report ? (
         <article className={styles.detailCard}>
           <header className={styles.detailHeader}>
-            <div>
+            <div className={styles.headerTop}>
               <span className={`${styles.typeLabel} ${type === "found" ? styles.found : ""}`}>{type} report</span>
-              <h1>{report.itemName}</h1>
-              {report.imageUrls?.[0] ? <div className={styles.detailImage}><Image src={report.imageUrls[0]} alt={`${report.itemName} ${type} item`} fill sizes="(max-width: 800px) 100vw, 680px" /></div> : null}
-              <p>{report.description}</p>
+              <span className={styles.status}>{report.status || "open"}</span>
             </div>
-            <span className={styles.status}>{report.status || "open"}</span>
+            <h1>{report.itemName}</h1>
+            {report.imageUrls?.[0] ? (
+              <div className={styles.detailImage}>
+                <Image
+                  src={report.imageUrls[0]}
+                  alt={`${report.itemName} ${type} item`}
+                  fill
+                  sizes="(max-width: 768px) calc(100vw - 72px), (max-width: 980px) calc(100vw - 80px), calc(100vw - 380px)"
+                />
+              </div>
+            ) : null}
+            <p>{report.description}</p>
           </header>
           <div className={styles.detailGrid}>
             <Detail label="Category" value={report.category} icon={<FaTag />} />
