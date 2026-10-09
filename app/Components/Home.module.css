@@ -6,8 +6,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 28px;
-  padding: 32px 36px;
+  gap: clamp(20px, 3vw, 36px);
+  padding: clamp(24px, 3.5vw, 36px);
+  min-width: 0;
   border-radius: 20px;
   border: 1px solid var(--border-subtle, #e2e8f0);
   background: linear-gradient(135deg, #eff6ff 0%, #ffffff 58%, #f0fdfa 100%);
@@ -16,6 +17,7 @@
 
 .heroContent {
   flex: 1;
+  min-width: 0;
 }
 
 .eyebrow {
@@ -47,6 +49,7 @@
 .heroActions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 12px;
 }
 
@@ -65,6 +68,16 @@
   text-decoration: none;
   transition: all 180ms ease;
   white-space: nowrap;
+}
+
+.primaryBtn:focus-visible,
+.secondaryBtn:focus-visible,
+.segmented button:focus-visible,
+.detailsLink:focus-visible,
+.viewAll:focus-visible,
+.actionLink:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 3px;
 }
 
 .primaryBtn {
@@ -97,7 +110,7 @@
    ========================================================================== */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   margin-top: 20px;
 }
@@ -106,6 +119,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
   padding: 20px;
   border: 1px solid var(--border-subtle, #e2e8f0);
   border-radius: 16px;
@@ -157,6 +171,7 @@
   color: var(--slate-500, #64748b);
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .statInfo strong {
@@ -170,8 +185,9 @@
    Feed Panel
    ========================================================================== */
 .feedPanel {
+  min-width: 0;
   margin-top: 20px;
-  padding: 26px;
+  padding: clamp(18px, 2.5vw, 26px);
   border: 1px solid var(--border-subtle, #e2e8f0);
   border-radius: 20px;
   background: #ffffff;
@@ -183,6 +199,10 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
+}
+
+.feedHeader > div {
+  min-width: 0;
 }
 
 .feedHeader h2 {
@@ -245,6 +265,7 @@
 
 .searchField input {
   width: 100%;
+  min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
@@ -295,7 +316,7 @@
 .postGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: clamp(12px, 1.6vw, 18px);
   margin-top: 6px;
 }
 
@@ -364,7 +385,7 @@
 .postImageWrap {
   position: relative;
   width: 100%;
-  height: 175px;
+  height: clamp(150px, 17vw, 205px);
   border-radius: 12px;
   overflow: hidden;
   background: var(--slate-100, #f1f5f9);
@@ -432,6 +453,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+}
+
+.postMeta span:first-child {
+  overflow-wrap: anywhere;
 }
 
 .postMeta svg {
@@ -479,7 +505,7 @@
    ========================================================================== */
 .actionGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin-top: 20px;
 }
@@ -488,6 +514,7 @@
   display: flex;
   align-items: flex-start;
   gap: 18px;
+  min-width: 0;
   padding: 24px;
   border: 1px solid var(--border-subtle, #e2e8f0);
   border-radius: 18px;
@@ -611,7 +638,7 @@
    ========================================================================== */
 @media (max-width: 1100px) {
   .statsGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .postGrid {
@@ -622,8 +649,8 @@
 @media (max-width: 768px) {
   .heroCard {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 24px;
+    align-items: stretch;
+    gap: 20px;
   }
 
   .heroActions {
@@ -631,31 +658,159 @@
   }
 
   .heroActions button {
-    width: 100%;
+    flex: 1 1 190px;
   }
 
   .feedHeader {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .feedToolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+
+  .segmented {
+    width: 100%;
   }
 
   .segmented button {
     flex: 1;
   }
 
-  .statsGrid,
-  .postGrid,
-  .actionGrid {
-    grid-template-columns: 1fr;
+  .postGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .feedPanel {
-    padding: 18px;
+  .actionCard {
+    gap: 14px;
+    padding: 20px;
   }
 }
 
+@media (max-width: 560px) {
+  .heroCard {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .heroCard h1 {
+    font-size: clamp(25px, 7vw, 32px);
+  }
+
+  .heroText {
+    font-size: 14px;
+  }
+
+  .heroActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .heroActions button {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .statsGrid {
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .statCard {
+    align-items: center;
+    flex-direction: row;
+    gap: 9px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .statIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  .statInfo {
+    min-width: 0;
+  }
+
+  .statInfo p {
+    font-size: 11px;
+  }
+
+  .statInfo strong {
+    font-size: 24px;
+  }
+
+  .feedPanel {
+    margin-top: 14px;
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .feedHeader {
+    gap: 12px;
+  }
+
+  .feedHeader h2 {
+    font-size: 20px;
+  }
+
+  .feedHeader > div > p:last-child {
+    font-size: 13px;
+  }
+
+  .viewAll {
+    min-height: 40px;
+  }
+
+  .postGrid,
+  .actionGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .postCard {
+    padding: 15px;
+  }
+
+  .postImageWrap {
+    height: clamp(175px, 58vw, 240px);
+  }
+
+  .actionGrid {
+    margin-top: 14px;
+  }
+
+  .actionCard {
+    padding: 18px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .heroCard {
+    padding: 18px 14px;
+  }
+
+  .statsGrid {
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px;
+  }
+
+  .feedPanel {
+    padding: 14px 12px;
+  }
+
+  .segmented button {
+    padding: 0 10px;
+  }
+}

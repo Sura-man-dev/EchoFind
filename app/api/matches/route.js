@@ -1,21 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getMatchSuggestions } from "@/lib/matching";
 import { requireAdmin } from "@/lib/admin";
+import { analyzeFoundReport, GeminiAnalysisError } from "@/lib/gemini";
 
 export async function GET() {
   try {
     if (!(await requireAdmin())) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
 
-    const [lostReports, foundReports] = await Promise.all([
-      prisma.lostReport.findMany({ where: { status: "open" }, orderBy: { createdAt: "desc" }, take: 50 }),
-      prisma.foundReport.findMany({ where: { status: "open" }, orderBy: { createdAt: "desc" }, take: 50 }),
+    const [lostReportCount, foundReports] = await Promise.all([
+      prisma.lostReport.count({ where: { status: "open" } }),
+      prisma.foundReport.findMany({
+        where: { status: "open" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          itemName: true,
+          category: true,
+          description: true,
+          foundLocation: true,
+          foundDate: true,
+          imageUrls: true,
+        },
+      }),
     ]);
 
-    return NextResponse.json(getMatchSuggestions(lostReports, foundReports).slice(0, 30));
+    return NextResponse.json({ foundReports, lostReportCount });
   } catch (error) {
-    console.error("Failed to generate match suggestions", error);
-    return NextResponse.json({ error: "Unable to generate match suggestions." }, { status: 500 });
+    console.error("Failed to load reports for AI analysis", error);
+    return NextResponse.json({ error: "Unable to load reports for AI analysis." }, { status: 500 });
   }
 }
 
@@ -23,7 +36,33 @@ export async function POST(request) {
   try {
     if (!(await requireAdmin())) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
 
-    const { lostReportId, foundReportId, score, reasons = [] } = await request.json();
+    const body = await request.json();
+    if (body.action === "analyze") {
+      if (typeof body.foundReportId !== "string" || !body.foundReportId) {
+        return NextResponse.json({ error: "Choose a found report to analyze." }, { status: 400 });
+      }
+
+      const foundReport = await prisma.foundReport.findFirst({
+        where: { id: body.foundReportId, status: "open" },
+      });
+      if (!foundReport) {
+        return NextResponse.json({ error: "The open found report could not be found." }, { status: 404 });
+      }
+
+      const lostReports = await prisma.lostReport.findMany({
+        where: { status: "open" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+      if (!lostReports.length) {
+        return NextResponse.json({ matches: [], imageWarnings: [], imagesAnalyzed: 0 });
+      }
+
+      const analysis = await analyzeFoundReport(foundReport, lostReports);
+      return NextResponse.json(analysis);
+    }
+
+    const { lostReportId, foundReportId, score, reasons = [] } = body;
     if (!lostReportId || !foundReportId || !Number.isFinite(score)) {
       return NextResponse.json({ error: "A valid match is required." }, { status: 400 });
     }
@@ -56,7 +95,10 @@ export async function POST(request) {
 
     return NextResponse.json({ match, notified });
   } catch (error) {
-    console.error("Failed to confirm item match", error);
-    return NextResponse.json({ error: "Unable to confirm this match." }, { status: 500 });
+    if (error instanceof GeminiAnalysisError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    console.error("Failed to process match request", error);
+    return NextResponse.json({ error: "Unable to process this match request." }, { status: 500 });
   }
 }

@@ -107,3 +107,44 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
 }
+
+@media (max-width: 720px) {
+  .footer {
+    margin-top: 36px;
+    padding: 36px 24px 20px;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .footerContainer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 20px;
+  }
+
+  .footerBrand {
+    grid-column: 1 / -1;
+  }
+
+  .footerBottom {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: 24px;
+    padding-top: 16px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .footer {
+    padding: 30px 18px 18px;
+  }
+
+  .footerContainer {
+    gap: 22px 14px;
+  }
+
+  .footerSection a,
+  .footerBrand p {
+    font-size: 13px;
+  }
+}

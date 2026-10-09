@@ -96,6 +96,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = user.email;
         token.picture = user.image;
         token.role = user.role;
+      } else if (token.id) {
+        const currentUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { name: true, email: true, image: true, role: true },
+        });
+
+        if (currentUser) {
+          token.name = currentUser.name;
+          token.email = currentUser.email;
+          token.picture = currentUser.image;
+          token.role = currentUser.role;
+        }
       }
 
       return token;

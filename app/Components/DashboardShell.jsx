@@ -75,6 +75,7 @@ export default function DashboardShell({ children }) {
   const actionsWrapRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openPanel, setOpenPanel] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -93,6 +94,19 @@ export default function DashboardShell({ children }) {
     window.localStorage.setItem("echofind-sidebar", sidebarCollapsed ? "expanded" : "collapsed");
     window.dispatchEvent(new Event("echofind-sidebar-change"));
   };
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      if (event.detail?.user) setSessionUser(event.detail.user);
+    };
+
+    window.addEventListener("echofind-profile-updated", handleProfileUpdate);
+    return () => window.removeEventListener("echofind-profile-updated", handleProfileUpdate);
+  }, []);
 
   const loadNotifications = useCallback(async () => {
     try {
@@ -269,10 +283,20 @@ export default function DashboardShell({ children }) {
     .toUpperCase();
 
   return (
-    <div className={`${styles.appShell} ${sidebarCollapsed ? styles.sidebarIsCollapsed : ""}`}>
+    <div className={`${styles.appShell} ${sidebarCollapsed ? styles.sidebarIsCollapsed : ""} ${mobileMenuOpen ? styles.mobileMenuOpen : ""}`}>
       {/* Top Navigation Bar */}
       <header className={styles.topbar}>
         <div className={styles.topbarLeft}>
+          <button
+            type="button"
+            className={styles.mobileMenuToggle}
+            onClick={() => setMobileMenuOpen((isOpen) => !isOpen)}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="dashboard-navigation"
+          >
+            {mobileMenuOpen ? <FiX /> : <FiMenu />}
+          </button>
           <button
             type="button"
             className={styles.sidebarToggle}
@@ -305,7 +329,7 @@ export default function DashboardShell({ children }) {
             type="search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search items, locations, reports..."
+            placeholder="Search reports..."
             aria-label="Search items or locations"
           />
           {searchTerm ? (
@@ -329,14 +353,6 @@ export default function DashboardShell({ children }) {
 
         {/* Action Controls */}
         <div className={styles.topActions} ref={actionsWrapRef}>
-          {/* Quick Create Report CTA */}
-          <Link href="/report" className={styles.quickReportBtn} title="Report lost item">
-            <FaPlus />
-            <span className={styles.quickReportLabel}>Report Item</span>
-          </Link>
-
-          <div className={styles.actionDivider} />
-
           {/* Notifications Trigger & Panel */}
           <div className={styles.actionWrap}>
             <button
@@ -518,76 +534,26 @@ export default function DashboardShell({ children }) {
                   </div>
                 </div>
 
-                {/* Profile Navigation Links */}
+                {/* Account actions */}
                 <div className={styles.profileMenuLinks}>
                   <Link
-                    href="/"
-                    className={`${styles.profileMenuItem} ${pathname === "/" ? styles.profileMenuItemActive : ""}`}
+                    href="/profile"
+                    className={`${styles.profileMenuItem} ${pathname === "/profile" ? styles.profileMenuItemActive : ""}`}
                     onClick={() => setOpenPanel(null)}
                   >
-                    <FaHome className={styles.menuItemIcon} />
-                    <span>Home</span>
-                  </Link>
-
-                  <Link
-                    href="/reports"
-                    className={`${styles.profileMenuItem} ${pathname === "/reports" ? styles.profileMenuItemActive : ""}`}
-                    onClick={() => setOpenPanel(null)}
-                  >
-                    <FaFileAlt className={styles.menuItemIcon} />
-                    <span>My Reports</span>
-                  </Link>
-
-                  <Link
-                    href="/report"
-                    className={`${styles.profileMenuItem} ${pathname === "/report" ? styles.profileMenuItemActive : ""}`}
-                    onClick={() => setOpenPanel(null)}
-                  >
-                    <FaPlus className={styles.menuItemIcon} />
-                    <span>Report Lost Item</span>
-                  </Link>
-
-                  <Link
-                    href="/foundreport"
-                    className={`${styles.profileMenuItem} ${pathname === "/foundreport" ? styles.profileMenuItemActive : ""}`}
-                    onClick={() => setOpenPanel(null)}
-                  >
-                    <FaBoxOpen className={styles.menuItemIcon} />
-                    <span>Report Found Item</span>
-                  </Link>
-
-                  <Link
-                    href="/foundItems"
-                    className={`${styles.profileMenuItem} ${pathname === "/foundItems" ? styles.profileMenuItemActive : ""}`}
-                    onClick={() => setOpenPanel(null)}
-                  >
-                    <FaSearch className={styles.menuItemIcon} />
-                    <span>Browse Found Items</span>
+                    <FaUser className={styles.menuItemIcon} />
+                    <span>Edit profile</span>
                   </Link>
 
                   {isAdmin && (
-                    <>
-                      <div className={styles.menuSectionDivider} />
-                      <div className={styles.menuSectionLabel}>Admin Workspace</div>
-
-                      <Link
-                        href="/admin/matches"
-                        className={`${styles.profileMenuItem} ${pathname === "/admin/matches" ? styles.profileMenuItemActive : ""}`}
-                        onClick={() => setOpenPanel(null)}
-                      >
-                        <FaRobot className={styles.menuItemIcon} />
-                        <span>AI Match Center</span>
-                      </Link>
-
-                      <Link
-                        href="/admin/users"
-                        className={`${styles.profileMenuItem} ${pathname === "/admin/users" ? styles.profileMenuItemActive : ""}`}
-                        onClick={() => setOpenPanel(null)}
-                      >
-                        <FaUser className={styles.menuItemIcon} />
-                        <span>Manage Users</span>
-                      </Link>
-                    </>
+                    <Link
+                      href="/admin/users"
+                      className={`${styles.profileMenuItem} ${pathname === "/admin/users" ? styles.profileMenuItemActive : ""}`}
+                      onClick={() => setOpenPanel(null)}
+                    >
+                      <FaShieldAlt className={styles.menuItemIcon} />
+                      <span>Manage users</span>
+                    </Link>
                   )}
                 </div>
 
@@ -612,8 +578,16 @@ export default function DashboardShell({ children }) {
 
       {/* Main Workspace Body */}
       <div className={styles.body}>
+        {mobileMenuOpen ? (
+          <button
+            type="button"
+            className={styles.mobileMenuBackdrop}
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close navigation menu"
+          />
+        ) : null}
         {/* Navigation Sidebar */}
-        <aside className={styles.sidebar}>
+        <aside className={styles.sidebar} id="dashboard-navigation">
           <div className={styles.sidebarHeader}>
             <span className={styles.sidebarHeaderLabel}>Workspace</span>
             <button
@@ -636,6 +610,7 @@ export default function DashboardShell({ children }) {
                   href={href}
                   title={sidebarCollapsed ? label : undefined}
                   className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   <span className={styles.menuIconWrap}>
                     <Icon />
@@ -658,6 +633,7 @@ export default function DashboardShell({ children }) {
                   href={href}
                   title={sidebarCollapsed ? label : undefined}
                   className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   <span className={styles.menuIconWrap}>
                     <Icon />
@@ -684,6 +660,7 @@ export default function DashboardShell({ children }) {
                       href={href}
                       title={sidebarCollapsed ? label : undefined}
                       className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
                       <span className={styles.menuIconWrap}>
                         <Icon />

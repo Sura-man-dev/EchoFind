@@ -46,6 +46,7 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 | `ADMIN_EMAIL` | Yes | Email address assigned the initial admin role |
 | `IMAGEKIT_PRIVATE_KEY` | For image uploads | ImageKit private API key; keep it server-side and never expose it as a `NEXT_PUBLIC_` variable |
 | `IMAGEKIT_URL_ENDPOINT` | For ImageKit images | ImageKit URL endpoint, such as `https://ik.imagekit.io/your_imagekit_id` |
+| `GEMINI_API_KEY` | For AI match analysis | Google Gemini API key; keep it server-side and never expose it as a `NEXT_PUBLIC_` variable |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No | Google sign-in credentials |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | No | GitHub sign-in credentials |
 | `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | No | Facebook sign-in credentials |
@@ -74,9 +75,19 @@ Configure the environment variables and PostgreSQL database in your hosting prov
 
 Image uploads require `IMAGEKIT_PRIVATE_KEY`; without it, the upload endpoint returns a configuration error. Existing reports that reference files under `/uploads/reports` continue to use those legacy local files.
 
+### Gemini AI report matching
+
+1. Create an API key in Google AI Studio.
+2. Add it as `GEMINI_API_KEY` in `.env.local` and in the server environment used for deployment. Never expose it as a `NEXT_PUBLIC_` variable.
+3. Restart the development server or redeploy. In the admin **AI Match Center**, select an open found report and choose **Analyze with Gemini**.
+
+Gemini compares the found report with up to 50 open lost reports, using the item details, locations, dates and times, and the first available photo for each report. Report contact information is not sent for analysis. The API key is only used server-side, and an administrator must still confirm a suggested match before notifications are sent.
+
 ### Authentication
 
 The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. Password-reset pages and Auth.js/signup endpoints remain public so account access can be restored or created.
+
+Signed-in users can manage their display name, profile photo, and password from the **Edit profile** option in the account menu. Profile-photo uploads use the configured ImageKit account.
 
 ## Project structure
 
