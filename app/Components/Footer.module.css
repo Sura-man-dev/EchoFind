@@ -32,6 +32,11 @@
   -webkit-text-fill-color: transparent;
 }
 
+.brandLink {
+  display: inline-block;
+  text-decoration: none;
+}
+
 .footerBrand p {
   font-size: 14px;
   color: var(--slate-500, #64748b);
@@ -79,33 +84,6 @@
 .footerBottom p {
   font-size: 13px;
   color: var(--slate-400, #94a3b8);
-}
-
-.socials {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.socials svg {
-  background: var(--slate-100, #f1f5f9);
-  color: var(--slate-600, #475569);
-  padding: 8px;
-  border-radius: 50%;
-  font-size: 14px;
-  width: 34px;
-  height: 34px;
-  cursor: pointer;
-  transition: all 180ms ease;
-  border: 1px solid var(--border-subtle, #e2e8f0);
-}
-
-.socials svg:hover {
-  background: var(--primary-600, #2563eb);
-  color: #ffffff;
-  border-color: var(--primary-600, #2563eb);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
 }
 
 @media (max-width: 720px) {

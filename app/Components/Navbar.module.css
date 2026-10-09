@@ -96,6 +96,13 @@
   font-size: 13.5px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.userPill:hover {
+  background: var(--primary-100, #dbeafe);
+  border-color: var(--primary-300, #93c5fd);
 }
 
 .login {
@@ -205,6 +212,12 @@
   }
 
   .userPill {
-    display: none;
+    display: inline-flex;
+    max-width: 110px;
+    overflow: hidden;
+    padding: 6px 9px;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

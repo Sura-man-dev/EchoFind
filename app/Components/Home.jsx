@@ -49,7 +49,11 @@ export default function Home() {
       fetch("/api/reports/found", { cache: "no-store" }).then((response) => response.json()),
     ])
       .then(([statsData, lost, found]) => {
-        setStats(statsData);
+        setStats({
+          lostCount: Number.isFinite(statsData?.lostCount) ? Math.max(0, statsData.lostCount) : 0,
+          foundCount: Number.isFinite(statsData?.foundCount) ? Math.max(0, statsData.foundCount) : 0,
+          messageCount: Number.isFinite(statsData?.messageCount) ? Math.max(0, statsData.messageCount) : 0,
+        });
         const mergedPosts = [
           ...(Array.isArray(lost) ? lost : []).map((report) => ({
             ...report,
@@ -294,4 +298,3 @@ function formatDate(value) {
     ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value))
     : "Date not provided";
 }
-

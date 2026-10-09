@@ -73,6 +73,16 @@ export default function SignupModal({
   }, []);
 
   useEffect(() => {
+    if (
+      show &&
+      mode === "login" &&
+      new URLSearchParams(window.location.search).get("passwordReset") === "success"
+    ) {
+      setNotice("Your password was reset successfully. Sign in with your new password.");
+    }
+  }, [mode, show]);
+
+  useEffect(() => {
     if (!show) {
       return;
     }

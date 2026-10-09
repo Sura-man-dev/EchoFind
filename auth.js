@@ -13,6 +13,8 @@ const credentialsSchema = z.object({
   password: z.string().min(1),
 });
 
+const userRefreshIntervalMs = 60_000;
+
 const providers = [];
 
 if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
@@ -96,17 +98,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = user.email;
         token.picture = user.image;
         token.role = user.role;
-      } else if (token.id) {
-        const currentUser = await prisma.user.findUnique({
-          where: { id: token.id },
-          select: { name: true, email: true, image: true, role: true },
-        });
+        token.userCheckedAt = Date.now();
+      } else if (token.id && Date.now() - (token.userCheckedAt ?? 0) >= userRefreshIntervalMs) {
+        try {
+          const currentUser = await prisma.user.findUnique({
+            where: { id: token.id },
+            select: { name: true, email: true, image: true, role: true },
+          });
 
-        if (currentUser) {
-          token.name = currentUser.name;
-          token.email = currentUser.email;
-          token.picture = currentUser.image;
-          token.role = currentUser.role;
+          if (currentUser) {
+            token.name = currentUser.name;
+            token.email = currentUser.email;
+            token.picture = currentUser.image;
+            token.role = currentUser.role;
+          }
+          token.userCheckedAt = Date.now();
+        } catch (error) {
+          if (error?.code !== "P1001") {
+            throw error;
+          }
+
+          console.warn("Auth session refresh skipped because the database is unreachable (Prisma P1001).");
+          token.userCheckedAt = Date.now();
         }
       }
 

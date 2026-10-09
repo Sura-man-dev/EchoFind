@@ -1,11 +1,19 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-const publicAuthPages = new Set(["/login", "/register", "/reset-password"]);
+const publicPages = new Set([
+  "/",
+  "/login",
+  "/register",
+  "/reset-password",
+  "/faq",
+  "/privacy-policy",
+  "/terms-of-service",
+]);
 
 export default auth((request) => {
   const { pathname, search } = request.nextUrl;
-  const isAuthPage = publicAuthPages.has(pathname);
+  const isPublicPage = publicPages.has(pathname);
 
   if (request.auth?.user) {
     if (pathname === "/login" || pathname === "/register") {
@@ -15,11 +23,7 @@ export default auth((request) => {
     return NextResponse.next();
   }
 
-  if (pathname === "/") {
-    return NextResponse.next();
-  }
-
-  if (isAuthPage) {
+  if (isPublicPage) {
     return NextResponse.next();
   }
 

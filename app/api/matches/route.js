@@ -7,7 +7,7 @@ export async function GET() {
   try {
     if (!(await requireAdmin())) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
 
-    const [lostReportCount, foundReports] = await Promise.all([
+    const [lostReportCount, foundReports, lostReports] = await Promise.all([
       prisma.lostReport.count({ where: { status: "open" } }),
       prisma.foundReport.findMany({
         where: { status: "open" },
@@ -23,9 +23,23 @@ export async function GET() {
           imageUrls: true,
         },
       }),
+      prisma.lostReport.findMany({
+        where: { status: "open" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          itemName: true,
+          category: true,
+          description: true,
+          lostLocation: true,
+          lostDate: true,
+          imageUrls: true,
+        },
+      }),
     ]);
 
-    return NextResponse.json({ foundReports, lostReportCount });
+    return NextResponse.json({ foundReports, lostReports, lostReportCount });
   } catch (error) {
     console.error("Failed to load reports for AI analysis", error);
     return NextResponse.json({ error: "Unable to load reports for AI analysis." }, { status: 500 });
@@ -62,38 +76,75 @@ export async function POST(request) {
       return NextResponse.json(analysis);
     }
 
-    const { lostReportId, foundReportId, score, reasons = [] } = body;
-    if (!lostReportId || !foundReportId || !Number.isFinite(score)) {
+    const isManualConfirmation = body.action === "manualConfirm";
+    const { lostReportId, foundReportId } = body;
+    const score = isManualConfirmation ? 100 : body.score;
+    const reasons = isManualConfirmation
+      ? ["Manually reviewed and confirmed by an administrator."]
+      : body.reasons;
+
+    if (
+      typeof lostReportId !== "string" ||
+      typeof foundReportId !== "string" ||
+      !Number.isInteger(score) ||
+      score < 0 ||
+      score > 100 ||
+      (!isManualConfirmation &&
+        (!Array.isArray(reasons) ||
+          reasons.length === 0 ||
+          reasons.some((reason) => typeof reason !== "string")))
+    ) {
       return NextResponse.json({ error: "A valid match is required." }, { status: 400 });
     }
 
-    const lostReport = await prisma.lostReport.findUnique({ where: { id: lostReportId } });
-    const foundReport = await prisma.foundReport.findUnique({ where: { id: foundReportId } });
-    if (!lostReport || !foundReport) return NextResponse.json({ error: "Reports could not be found." }, { status: 404 });
+    const result = await prisma.$transaction(async (transaction) => {
+      const [lostReport, foundReport] = await Promise.all([
+        transaction.lostReport.findFirst({
+          where: { id: lostReportId, status: "open" },
+        }),
+        transaction.foundReport.findFirst({
+          where: { id: foundReportId, status: "open" },
+        }),
+      ]);
+      if (!lostReport || !foundReport) {
+        return null;
+      }
 
-    const match = await prisma.itemMatch.upsert({
-      where: { lostReportId_foundReportId: { lostReportId, foundReportId } },
-      update: { score: Math.round(score), reasons, status: "confirmed", confirmedAt: new Date() },
-      create: { lostReportId, foundReportId, score: Math.round(score), reasons, status: "confirmed", confirmedAt: new Date() },
+      const match = await transaction.itemMatch.upsert({
+        where: { lostReportId_foundReportId: { lostReportId, foundReportId } },
+        update: { score, reasons, status: "confirmed", confirmedAt: new Date() },
+        create: { lostReportId, foundReportId, score, reasons, status: "confirmed", confirmedAt: new Date() },
+      });
+
+      const recipientIds = [...new Set([lostReport.userId, foundReport.userId].filter(Boolean))];
+      await Promise.all([
+        transaction.lostReport.update({ where: { id: lostReportId }, data: { status: "matched" } }),
+        transaction.foundReport.update({ where: { id: foundReportId }, data: { status: "matched" } }),
+        ...(recipientIds.length
+          ? [
+              transaction.notification.createMany({
+                data: recipientIds.map((userId) => ({
+                  userId,
+                  type: "match",
+                  title: "A possible item match was confirmed",
+                  message: `A match was confirmed between "${lostReport.itemName}" and "${foundReport.itemName}". Check your reports for next steps.`,
+                })),
+              }),
+            ]
+          : []),
+      ]);
+
+      return { match, notified: recipientIds.length > 0 };
     });
 
-    const recipientIds = [...new Set([lostReport.userId, foundReport.userId].filter(Boolean))];
-    const notified = recipientIds.length > 0;
+    if (!result) {
+      return NextResponse.json(
+        { error: "One or both reports are no longer open. Refresh the report list and try again." },
+        { status: 409 }
+      );
+    }
 
-    await prisma.$transaction([
-      prisma.lostReport.update({ where: { id: lostReportId }, data: { status: "matched" } }),
-      prisma.foundReport.update({ where: { id: foundReportId }, data: { status: "matched" } }),
-      ...(notified ? [prisma.notification.createMany({
-        data: recipientIds.map((userId) => ({
-          userId,
-          type: "match",
-          title: "A possible item match was confirmed",
-          message: `A match was confirmed between "${lostReport.itemName}" and "${foundReport.itemName}". Check your reports for next steps.`,
-        })),
-      })] : []),
-    ]);
-
-    return NextResponse.json({ match, notified });
+    return NextResponse.json(result);
   } catch (error) {
     if (error instanceof GeminiAnalysisError) {
       return NextResponse.json({ error: error.message }, { status: error.status });

@@ -18,6 +18,8 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 
 2. Copy `.env.example` to `.env.local` and fill in the values. Keep real credentials out of Git.
 
+   For Neon, use the current connection string from the intended project and branch, and verify that the endpoint is active. Keep `sslmode=require`; use the direct (non-pooled) connection string for migrations when Neon provides both pooled and direct URLs.
+
 3. Generate the Prisma client and apply the included database migrations:
 
    ```bash
@@ -47,6 +49,7 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 | `IMAGEKIT_PRIVATE_KEY` | For image uploads | ImageKit private API key; keep it server-side and never expose it as a `NEXT_PUBLIC_` variable |
 | `IMAGEKIT_URL_ENDPOINT` | For ImageKit images | ImageKit URL endpoint, such as `https://ik.imagekit.io/your_imagekit_id` |
 | `GEMINI_API_KEY` | For AI match analysis | Google Gemini API key; keep it server-side and never expose it as a `NEXT_PUBLIC_` variable |
+| `GEMINI_MODEL` | No | Optional Gemini `generateContent` model name; defaults to discovering an available Flash model |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No | Google sign-in credentials |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | No | GitHub sign-in credentials |
 | `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | No | Facebook sign-in credentials |
@@ -81,11 +84,13 @@ Image uploads require `IMAGEKIT_PRIVATE_KEY`; without it, the upload endpoint re
 2. Add it as `GEMINI_API_KEY` in `.env.local` and in the server environment used for deployment. Never expose it as a `NEXT_PUBLIC_` variable.
 3. Restart the development server or redeploy. In the admin **AI Match Center**, select an open found report and choose **Analyze with Gemini**.
 
-Gemini compares the found report with up to 50 open lost reports, using the item details, locations, dates and times, and the first available photo for each report. Report contact information is not sent for analysis. The API key is only used server-side, and an administrator must still confirm a suggested match before notifications are sent.
+Gemini compares the found report with up to 50 open lost reports, using the item details, locations, dates and times, and available report photos. EchoFind checks which `generateContent` models are enabled for the configured API key, then tries compatible Gemini Flash models if discovery is unavailable or a model is retired. Optionally set `GEMINI_MODEL` to an enabled model in `.env.local`. Create a key in [Google AI Studio](https://aistudio.google.com/apikey), verify Gemini API access for its project, and restart the app after changing environment variables. Report contact information is not sent for analysis. The API key is only used server-side, and an administrator must still review and confirm each suggested match before notifications are sent. If AI is unavailable, the admin match center also offers a manual report-review and confirmation flow.
 
 ### Authentication
 
-The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. Password-reset pages and Auth.js/signup endpoints remain public so account access can be restored or created.
+The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. Password-reset pages and Auth.js/signup endpoints remain public so account access can be restored or created. Session profile and role claims refresh from the database at most once per minute; if Prisma reports that the database is unreachable, an existing JWT session continues with its last-known claims until the database is available again. Signing in and database-backed features still require a working database connection.
+
+The FAQ, Privacy Policy, and Terms of Service are public and available from the footer.
 
 Signed-in users can manage their display name, profile photo, and password from the **Edit profile** option in the account menu. Profile-photo uploads use the configured ImageKit account.
 

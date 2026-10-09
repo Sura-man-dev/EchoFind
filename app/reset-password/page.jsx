@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./page.module.css";
 
@@ -10,6 +11,7 @@ const initialState = {
 };
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
   const [form, setForm] = useState(initialState);
@@ -50,8 +52,8 @@ export default function ResetPasswordPage() {
         throw new Error(data.error || "Unable to reset password.");
       }
 
-      setNotice(data.message);
       setForm(initialState);
+      router.replace("/login?passwordReset=success");
     } catch (submitError) {
       setError(submitError.message);
     } finally {

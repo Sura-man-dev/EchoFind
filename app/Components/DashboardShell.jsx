@@ -35,7 +35,7 @@ const secondaryNavigation = [
 ];
 
 const adminNavigation = [
-  { href: "/admin/matches", label: "AI Match Center", icon: FaRobot },
+  { href: "/admin/matches", label: "Match Center", icon: FaRobot },
   { href: "/admin/users", label: "Manage Users", icon: FaUser },
 ];
 

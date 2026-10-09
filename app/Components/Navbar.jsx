@@ -2,6 +2,7 @@
 
 import styles from "./Navbar.module.css";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -72,30 +73,32 @@ export default function Navbar() {
 
   return (
     <div className={styles.navbar}>
-      <div className={styles.logo}>
-        <div className={styles.iconContainer}>
+      <Link href="/" aria-label="EchoFind home" className={styles.logo}>
+        <span className={styles.iconContainer}>
           <Image
             src="/logo.png"
-            alt="Company Logo"    
+            alt=""
             width={50}
             height={55}
             priority
           />
-        </div>
+        </span>
         <span className={styles.text}>EchoFind</span>
-      </div>
+      </Link>
 
       <div className={styles.links}>
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#contact">Contact</a>
+        <Link href="/#home">Home</Link>
+        <Link href="/#about">About</Link>
+        <Link href="/#how-it-works">How It Works</Link>
+        <Link href="/#contact">Contact</Link>
       </div>
 
       <div className={styles.buttons}>
         {authUser ? (
           <>
-            <div className={styles.userPill}>Hi, {authUser.name?.split(" ")[0] || "there"}</div>
+            <Link href="/profile" className={styles.userPill}>
+              {authUser.name?.split(" ")[0] || "My profile"}
+            </Link>
             <button className={styles.login} type="button" onClick={handleLogout} disabled={isLoggingOut}>
               {isLoggingOut ? "Logging out..." : "Log Out"}
             </button>
