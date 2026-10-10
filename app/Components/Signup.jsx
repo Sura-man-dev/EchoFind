@@ -181,6 +181,10 @@ export default function SignupModal({
     });
 
     if (!result?.ok || result.error) {
+      if (result?.code === "service_unavailable" || result?.error !== "CredentialsSignin") {
+        throw new Error("Sign-in is temporarily unavailable. Please try again shortly.");
+      }
+
       throw new Error("Invalid email or password.");
     }
 
@@ -476,8 +480,8 @@ export default function SignupModal({
                 required
               />
               <span>
-                I agree to the <a href="#contact">Terms of Service</a> and{" "}
-                <a href="#contact">Privacy Policy</a>
+                I agree to the <a href="/terms-of-service">Terms of Service</a> and{" "}
+                <a href="/privacy-policy">Privacy Policy</a>
               </span>
             </label>
           ) : null}

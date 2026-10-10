@@ -69,6 +69,8 @@ npm start         # Serve the production build
 
 Configure the environment variables and PostgreSQL database in your hosting provider, then run `npx prisma migrate deploy` as part of deployment.
 
+For Neon, use the pooled (`-pooler`) endpoint for the running app and keep `sslmode=require`. If the host closes connections under serverless load, add `connection_limit=1` to the `DATABASE_URL` query string (preserving any existing query parameters), then restart or redeploy. A connection-reset error can also mean the Neon project is suspended, the endpoint/credentials are stale, or the hosting environment cannot reach Neon; check the database provider status and connection string rather than changing application credentials in source control.
+
 ### ImageKit setup
 
 1. Create an ImageKit account and open its developer/API key settings.

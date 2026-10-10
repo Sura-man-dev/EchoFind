@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/passwords";
+import { isTransientDatabaseError } from "@/lib/database-errors";
 
 const signupSchema = z
   .object({
@@ -75,6 +76,21 @@ export async function POST(request) {
       },
     });
   } catch (error) {
+    if (isTransientDatabaseError(error)) {
+      console.error("Signup is unavailable because the database connection failed.");
+      return NextResponse.json(
+        { error: "Account creation is temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
+
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { error: "An account with this email already exists." },
+        { status: 409 }
+      );
+    }
+
     console.error("Signup failed", error);
 
     return NextResponse.json(

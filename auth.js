@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Facebook from "next-auth/providers/facebook";
@@ -7,6 +7,7 @@ import Google from "next-auth/providers/google";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/passwords";
+import { isTransientDatabaseError } from "@/lib/database-errors";
 
 const credentialsSchema = z.object({
   email: z.string().trim().email().transform((value) => value.toLowerCase()),
@@ -14,6 +15,10 @@ const credentialsSchema = z.object({
 });
 
 const userRefreshIntervalMs = 60_000;
+
+class DatabaseUnavailableSignin extends CredentialsSignin {
+  code = "service_unavailable";
+}
 
 const providers = [];
 
@@ -59,9 +64,19 @@ providers.push(
       }
 
       const { email, password } = parsedCredentials.data;
-      const user = await prisma.user.findUnique({
-        where: { email },
-      });
+      let user;
+      try {
+        user = await prisma.user.findUnique({
+          where: { email },
+        });
+      } catch (error) {
+        if (!isTransientDatabaseError(error)) {
+          throw error;
+        }
+
+        console.error("Credential sign-in is unavailable because the database connection failed.");
+        throw new DatabaseUnavailableSignin();
+      }
 
       if (!user?.passwordHash) {
         return null;
@@ -85,7 +100,10 @@ providers.push(
 );
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: process.env.AUTH_TRUST_HOST === "true" || process.env.NODE_ENV !== "production",
+  trustHost:
+    process.env.AUTH_TRUST_HOST === "true" ||
+    process.env.VERCEL === "1" ||
+    process.env.NODE_ENV !== "production",
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
@@ -115,11 +133,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
           token.userCheckedAt = Date.now();
         } catch (error) {
-          if (error?.code !== "P1001") {
+          if (!isTransientDatabaseError(error)) {
             throw error;
           }
 
-          console.warn("Auth session refresh skipped because the database is unreachable (Prisma P1001).");
+          console.warn("Auth session refresh skipped because the database connection is temporarily unavailable.");
           token.userCheckedAt = Date.now();
         }
       }

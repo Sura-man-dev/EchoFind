@@ -11,7 +11,7 @@ const publicPages = new Set([
   "/terms-of-service",
 ]);
 
-export default auth((request) => {
+const authProxy = auth((request) => {
   const { pathname, search } = request.nextUrl;
   const isPublicPage = publicPages.has(pathname);
 
@@ -35,6 +35,14 @@ export default auth((request) => {
   loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
   return NextResponse.redirect(loginUrl);
 });
+
+export default function proxy(request, event) {
+  if (request.method === "OPTIONS") {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  return authProxy(request, event);
+}
 
 export const config = {
   matcher: [

@@ -7,6 +7,10 @@ import { auth } from "@/auth";
 export const metadata = {
   title: "EchoFind",
   description: "Find lost items and help return found belongings with EchoFind.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default async function RootLayout({ children }) {
