@@ -35,6 +35,7 @@ const secondaryNavigation = [
 ];
 
 const adminNavigation = [
+  { href: "/admin/reports", label: "Manage Reports", icon: FaClipboardList },
   { href: "/admin/matches", label: "Match Center", icon: FaRobot },
   { href: "/admin/users", label: "Manage Users", icon: FaUser },
 ];
@@ -155,7 +156,7 @@ export default function DashboardShell({ children }) {
       }
     };
 
-    const intervalId = window.setInterval(refreshWhenVisible, 15000);
+    const intervalId = window.setInterval(refreshWhenVisible, 5000);
     document.addEventListener("visibilitychange", refreshWhenVisible);
 
     return () => {
@@ -207,7 +208,7 @@ export default function DashboardShell({ children }) {
   const handleSearch = (event) => {
     event.preventDefault();
     const query = searchTerm.trim();
-    router.push(query ? `/foundItems?q=${encodeURIComponent(query)}` : "/foundItems");
+    router.push(query ? `/reports?q=${encodeURIComponent(query)}` : "/reports");
   };
 
   const markAllNotificationsRead = async () => {
@@ -260,8 +261,10 @@ export default function DashboardShell({ children }) {
       await markNotificationRead(notification);
     }
 
-    if (notification.type === "match" && isAdmin) {
+    if (isAdmin && notification.type === "match") {
       router.push("/admin/matches");
+    } else if (isAdmin && ["lost", "found"].includes(notification.type)) {
+      router.push("/admin/reports");
     } else {
       router.push("/reports");
     }
@@ -407,10 +410,10 @@ export default function DashboardShell({ children }) {
                       if (notification.type === "match") {
                         IconComponent = FaRobot;
                         iconToneClass = styles.iconTonePurple;
-                      } else if (notification.type === "found") {
+                      } else if (notification.type === "found" || notification.type.startsWith("found-")) {
                         IconComponent = FaBoxOpen;
                         iconToneClass = styles.iconToneGreen;
-                      } else if (notification.type === "lost") {
+                      } else if (notification.type === "lost" || notification.type.startsWith("lost-")) {
                         IconComponent = FaClipboardList;
                         iconToneClass = styles.iconToneBlue;
                       }

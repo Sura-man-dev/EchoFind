@@ -17,6 +17,13 @@ export async function GET(_request, { params }) {
 
     const report = await model.findUnique({ where: { id } });
     if (!report) return NextResponse.json({ error: "Report not found." }, { status: 404 });
+    if (
+      ["pending", "rejected"].includes(report.status) &&
+      report.userId !== session.user.id &&
+      session.user.role !== "admin"
+    ) {
+      return NextResponse.json({ error: "Report not found." }, { status: 404 });
+    }
 
     return NextResponse.json({ ...report, reportType: type });
   } catch (error) {

@@ -29,10 +29,10 @@ export async function GET() {
     }
 
     const reports = await prisma.lostReport.findMany({
+      where: { status: { notIn: ["pending", "rejected"] } },
       orderBy: {
         createdAt: "desc",
       },
-      take: 12,
     });
 
     return NextResponse.json(reports);
@@ -69,6 +69,7 @@ export async function POST(request) {
           ...payload,
           lostDate: new Date(payload.lostDate),
           userId: session.user.id,
+          status: "pending",
         },
       });
 

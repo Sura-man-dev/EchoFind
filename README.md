@@ -92,6 +92,12 @@ Gemini compares the found report with up to 50 open lost reports, using the item
 
 The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. Password-reset pages and Auth.js/signup endpoints remain public so account access can be restored or created. Session profile and role claims refresh from the database at most once per minute; if Prisma reports that the database is unreachable, an existing JWT session continues with its last-known claims until the database is available again. Signing in and database-backed features still require a working database connection.
 
+### Report review and notifications
+
+New lost and found reports are saved as pending and remain hidden from community feeds until an administrator approves them from **Admin → Manage Reports**. Admins can also reject reports, update report status, or remove posts. Report owners receive in-app notifications for moderation decisions and removals; open workspace sessions check for new notifications every five seconds. The global search searches both lost and found reports across item details, categories, and locations.
+
+Apply database changes during deployment with `npx prisma migrate deploy`.
+
 The FAQ, Privacy Policy, and Terms of Service are public and available from the footer.
 
 Signed-in users can manage their display name, profile photo, and password from the **Edit profile** option in the account menu. Profile-photo uploads use the configured ImageKit account.

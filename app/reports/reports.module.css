@@ -266,6 +266,19 @@
   color: var(--primary-500, #3b82f6);
 }
 
+.reportLink {
+  display: inline-flex;
+  margin-top: 14px;
+  color: var(--primary-600, #2563eb);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.reportLink:hover {
+  text-decoration: underline;
+}
+
 .emptyState {
   padding: 56px 24px;
   border: 1px dashed var(--slate-300, #cbd5e1);

@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const [lostCount, foundCount] = await Promise.all([
-      prisma.lostReport.count(),
-      prisma.foundReport.count(),
+      prisma.lostReport.count({ where: { status: { notIn: ["pending", "rejected"] } } }),
+      prisma.foundReport.count({ where: { status: { notIn: ["pending", "rejected"] } } }),
     ]);
 
     return NextResponse.json({
