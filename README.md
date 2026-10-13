@@ -94,7 +94,7 @@ The original landing page (`/`) is public. Workspace pages and APIs require a si
 
 ### Report review and notifications
 
-New lost and found reports are saved as pending and remain hidden from community feeds until an administrator approves them from **Admin → Manage Reports**. Admins can also reject reports, update report status, or remove posts. Report owners receive in-app notifications for moderation decisions and removals; open workspace sessions check for new notifications every five seconds. The global search searches both lost and found reports across item details, categories, and locations.
+New lost and found reports are saved as pending and remain hidden from community feeds until an administrator approves them from **Admin → Manage Reports**. Admins can also reject reports, update report status, or remove posts. Report owners receive in-app notifications for status changes and removals; opening a status notification links to the affected report. Removing a post also removes its item conversations and message notifications. Open workspace sessions check for new notifications every five seconds. The global search searches both lost and found reports across item details, categories, and locations.
 
 Signed-in users can start private, item-specific conversations from published report details and continue them from **Messages**. Participants receive in-app notifications when new messages arrive. Apply database changes during deployment with `npx prisma migrate deploy` to enable conversations and message notifications.
 

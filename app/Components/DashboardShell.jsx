@@ -263,7 +263,11 @@ export default function DashboardShell({ children }) {
       await markNotificationRead(notification);
     }
 
-    if (typeof notification.href === "string" && notification.href.startsWith("/messages/")) {
+    if (
+      typeof notification.href === "string" &&
+      notification.href.startsWith("/") &&
+      !notification.href.startsWith("//")
+    ) {
       router.push(notification.href);
     } else if (isAdmin && notification.type === "match") {
       router.push("/admin/matches");

@@ -82,22 +82,27 @@ export async function PATCH(request) {
     if (!report) return NextResponse.json({ error: "Report not found." }, { status: 404 });
 
     let notificationWarning;
-    if (report.userId && previousStatus === "pending" && ["open", "rejected"].includes(status)) {
-      const decision = status === "open" ? "approved" : "rejected";
+    if (report.userId && previousStatus !== status) {
+      const statusMessages = {
+        pending: `Your ${reportType} report for "${report.itemName}" is awaiting administrator review.`,
+        open: `Your ${reportType} report for "${report.itemName}" has been approved and is now visible to the community.`,
+        claimed: `Your ${reportType} report for "${report.itemName}" has been marked as claimed.`,
+        matched: `Your ${reportType} report for "${report.itemName}" has been marked as matched.`,
+        rejected: `Your ${reportType} report for "${report.itemName}" was not approved. Please review the details and submit an updated report if needed.`,
+      };
       try {
         await prisma.notification.create({
           data: {
             userId: report.userId,
-            type: `${reportType}-${decision}`,
-            title: `Your ${reportType} report was ${decision}`,
-            message: status === "open"
-              ? `Your report for "${report.itemName}" has been approved and is now visible to the community.`
-              : `Your report for "${report.itemName}" was not approved. Please review the details and submit an updated report if needed.`,
+            type: `${reportType}-${status}`,
+            title: `Your ${reportType} report status was updated`,
+            message: statusMessages[status],
+            href: `/reports/${report.id}?type=${reportType}`,
           },
         });
       } catch (error) {
-        console.error("Report status was updated, but its moderation notification could not be created", error);
-        notificationWarning = "The report status was updated, but the reporter notification could not be saved. Apply pending database migrations and try again.";
+        console.error("Report status was updated, but its notification could not be created", error);
+        notificationWarning = "The report status was updated, but the reporter notification could not be saved.";
       }
     }
 
@@ -130,6 +135,17 @@ export async function DELETE(request) {
       const model = getReportModel(transaction, reportType);
       const report = await model.findUnique({ where: { id: reportId } });
       if (!report) return false;
+
+      const conversations = await transaction.conversation.findMany({
+        where: { reportType, reportId },
+        select: { id: true },
+      });
+      if (conversations.length) {
+        await transaction.notification.deleteMany({
+          where: { href: { in: conversations.map(({ id }) => `/messages/${id}`) } },
+        });
+        await transaction.conversation.deleteMany({ where: { reportType, reportId } });
+      }
 
       if (reportType === "lost") {
         await transaction.itemMatch.deleteMany({ where: { lostReportId: reportId } });
