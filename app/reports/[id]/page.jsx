@@ -2,18 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaArrowLeft, FaCalendarAlt, FaEnvelope, FaMapMarkerAlt, FaPhone, FaTag } from "react-icons/fa";
+import { FaArrowLeft, FaCalendarAlt, FaComments, FaEnvelope, FaMapMarkerAlt, FaPhone, FaTag } from "react-icons/fa";
 import DashboardShell from "../../Components/DashboardShell";
 import styles from "./detail.module.css";
 
 export default function ReportDetailPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const type = searchParams.get("type") === "found" ? "found" : "lost";
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [startingConversation, setStartingConversation] = useState(false);
+  const [chatError, setChatError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -25,6 +29,40 @@ export default function ReportDetailPage() {
       })
       .catch((loadError) => setError(loadError.message));
   }, [id, type]);
+
+  useEffect(() => {
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unable to verify your session.");
+        setCurrentUserId(data.user?.id || "");
+      })
+      .catch((sessionError) => console.error("Failed to load current user for item messaging", sessionError));
+  }, []);
+
+  const startConversation = async () => {
+    if (!currentUserId) {
+      const callbackUrl = `/reports/${id}?type=${type}`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      return;
+    }
+
+    setChatError("");
+    setStartingConversation(true);
+    try {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportType: type, reportId: id }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to start a conversation.");
+      router.push(`/messages/${data.conversation.id}`);
+    } catch (requestError) {
+      setChatError(requestError.message || "Unable to start a conversation.");
+      setStartingConversation(false);
+    }
+  };
 
   return (
     <DashboardShell>
@@ -58,7 +96,34 @@ export default function ReportDetailPage() {
             <Detail label="Brand / color" value={[report.brand, report.color].filter(Boolean).join(" / ") || "Not provided"} icon={<FaTag />} />
           </div>
           <section className={styles.section}><h2>Additional details</h2><p>{report.locationDetails || "No additional location details were provided."}</p></section>
-          <section className={styles.contact}><div><h2>Contact information</h2><p>Use these details to coordinate a safe handoff.</p></div><div className={styles.contactDetails}>{report.contactEmail ? <a href={`mailto:${report.contactEmail}`}><FaEnvelope /> {report.contactEmail}</a> : null}{report.contactPhone ? <a href={`tel:${report.contactPhone}`}><FaPhone /> {report.contactPhone}</a> : null}<span>{report.contactName || "Contact not provided"}</span></div></section>
+          <section className={styles.contact}>
+            <div>
+              <h2>Contact the reporter</h2>
+              <p>Send a private message to discuss this item and coordinate a safe handoff.</p>
+            </div>
+            <div className={styles.contactDetails}>
+              {report.contactEmail ? <a href={`mailto:${report.contactEmail}`}><FaEnvelope /> {report.contactEmail}</a> : null}
+              {report.contactPhone ? <a href={`tel:${report.contactPhone}`}><FaPhone /> {report.contactPhone}</a> : null}
+              <span>{report.contactName || "Contact not provided"}</span>
+              {report.userId && report.userId !== currentUserId ? (
+                <button
+                  className={styles.messageButton}
+                  type="button"
+                  onClick={startConversation}
+                  disabled={startingConversation}
+                >
+                  <FaComments /> {startingConversation ? "Opening conversation…" : currentUserId ? "Message about this item" : "Sign in to message"}
+                </button>
+              ) : null}
+              {report.userId && report.userId === currentUserId ? (
+                <span className={styles.ownerNote}>This is your report. View replies in your messages.</span>
+              ) : null}
+              {!report.userId ? (
+                <span className={styles.ownerNote}>In-app messaging is unavailable for this report.</span>
+              ) : null}
+              {chatError ? <span className={styles.chatError} role="alert">{chatError}</span> : null}
+            </div>
+          </section>
         </article>
       ) : null}
     </DashboardShell>

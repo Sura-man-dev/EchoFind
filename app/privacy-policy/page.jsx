@@ -17,8 +17,9 @@ export default function PrivacyPolicyPage() {
         <p>
           EchoFind may process account details such as your name and email,
           profile information, authentication data, and the report details,
-          photos, and contact information you submit. The service also creates
-          notifications related to reports and account activity.
+          photos, and contact information you submit. Messages sent through
+          item conversations and notifications related to reports and account
+          activity are also stored.
         </p>
       </section>
       <section>
@@ -27,6 +28,7 @@ export default function PrivacyPolicyPage() {
           Information is used to operate accounts, publish and manage lost and
           found reports, support communication about items, provide
           notifications, protect the service, and maintain its functionality.
+          Item conversations are visible only to their participants.
         </p>
       </section>
       <section>

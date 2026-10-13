@@ -184,6 +184,49 @@
   text-decoration: underline;
 }
 
+.messageButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: 6px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.messageButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #1d4ed8;
+}
+
+.messageButton:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.ownerNote,
+.chatError {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ownerNote {
+  color: #64748b;
+}
+
+.chatError {
+  color: #b91c1c;
+}
+
 .state {
   padding: 56px 24px;
   color: var(--slate-500, #64748b);

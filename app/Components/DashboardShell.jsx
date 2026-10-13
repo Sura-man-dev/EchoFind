@@ -19,6 +19,7 @@ import {
   FaShieldAlt,
   FaChevronDown,
   FaArrowRight,
+  FaComments,
 } from "react-icons/fa";
 import { FiLogOut, FiMenu, FiSidebar, FiX } from "react-icons/fi";
 import styles from "./DashboardShell.module.css";
@@ -31,6 +32,7 @@ const primaryNavigation = [
 ];
 
 const secondaryNavigation = [
+  { href: "/messages", label: "Messages", icon: FaComments },
   { href: "/reports", label: "My Reports", icon: FaFileAlt },
 ];
 
@@ -261,7 +263,9 @@ export default function DashboardShell({ children }) {
       await markNotificationRead(notification);
     }
 
-    if (isAdmin && notification.type === "match") {
+    if (typeof notification.href === "string" && notification.href.startsWith("/messages/")) {
+      router.push(notification.href);
+    } else if (isAdmin && notification.type === "match") {
       router.push("/admin/matches");
     } else if (isAdmin && ["lost", "found"].includes(notification.type)) {
       router.push("/admin/reports");
@@ -410,6 +414,9 @@ export default function DashboardShell({ children }) {
                       if (notification.type === "match") {
                         IconComponent = FaRobot;
                         iconToneClass = styles.iconTonePurple;
+                      } else if (notification.type === "message") {
+                        IconComponent = FaComments;
+                        iconToneClass = styles.iconToneBlue;
                       } else if (notification.type === "found" || notification.type.startsWith("found-")) {
                         IconComponent = FaBoxOpen;
                         iconToneClass = styles.iconToneGreen;
@@ -629,7 +636,7 @@ export default function DashboardShell({ children }) {
 
           <div className={styles.navGroup}>
             {secondaryNavigation.map(({ href, label, icon: Icon }) => {
-              const isActive = pathname === href;
+              const isActive = pathname === href || pathname.startsWith(`${href}/`);
               return (
                 <Link
                   key={label}
