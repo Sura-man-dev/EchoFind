@@ -27,6 +27,7 @@ export default function ReportManagement() {
   const [savingId, setSavingId] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [warning, setWarning] = useState("");
 
   const loadReports = async () => {
     setLoading(true);
@@ -73,6 +74,7 @@ export default function ReportManagement() {
     setSavingId(report.id);
     setError("");
     setNotice("");
+    setWarning("");
     try {
       const response = await fetch("/api/admin/reports", {
         method: "PATCH",
@@ -91,6 +93,7 @@ export default function ReportManagement() {
           : item
       )));
       setNotice(`"${report.itemName}" is now ${data.status}.`);
+      setWarning(data.notificationWarning || "");
     } catch (updateError) {
       setError(updateError.message || "Unable to update this report.");
     } finally {
@@ -103,6 +106,7 @@ export default function ReportManagement() {
     setSavingId(report.id);
     setError("");
     setNotice("");
+    setWarning("");
     try {
       const response = await fetch("/api/admin/reports", {
         method: "DELETE",
@@ -165,6 +169,7 @@ export default function ReportManagement() {
       </div>
       {error ? <p className={styles.messageError} role="alert">{error}</p> : null}
       {notice ? <p className={styles.messageSuccess} role="status">{notice}</p> : null}
+      {warning ? <p className={styles.messageWarning} role="status">{warning}</p> : null}
       {loading ? <div className={styles.empty}>Loading reports...</div> : null}
       {!loading && !error && filteredReports.length === 0 ? (
         <div className={styles.empty}><FaClipboardList /><h2>No reports match</h2><p>Try changing your search or filters.</p></div>

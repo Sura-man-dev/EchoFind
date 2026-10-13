@@ -220,6 +220,17 @@
   color: #b91c1c;
 }
 
+.messageWarning {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .description {
   margin: 8px 0 12px;
   color: #475569;

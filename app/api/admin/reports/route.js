@@ -70,31 +70,43 @@ export async function PATCH(request) {
     }
 
     const { reportType, reportId, status } = result.data;
-    const report = await prisma.$transaction(async (transaction) => {
+    const { report, previousStatus } = await prisma.$transaction(async (transaction) => {
       const model = getReportModel(transaction, reportType);
       const current = await model.findUnique({ where: { id: reportId } });
-      if (!current) return null;
+      if (!current) return { report: null, previousStatus: null };
 
       const updated = await model.update({ where: { id: reportId }, data: { status } });
-      if (current.userId && current.status === "pending" && ["open", "rejected"].includes(status)) {
-        const decision = status === "open" ? "approved" : "rejected";
-        await transaction.notification.create({
-          data: {
-            userId: current.userId,
-            type: `${reportType}-${decision}`,
-            title: `Your ${reportType} report was ${decision}`,
-            message: status === "open"
-              ? `Your report for "${current.itemName}" has been approved and is now visible to the community.`
-              : `Your report for "${current.itemName}" was not approved. Please review the details and submit an updated report if needed.`,
-          },
-        });
-      }
-
-      return updated;
+      return { report: updated, previousStatus: current.status };
     });
 
     if (!report) return NextResponse.json({ error: "Report not found." }, { status: 404 });
-    return NextResponse.json({ reportType, reportId, status: report.status });
+
+    let notificationWarning;
+    if (report.userId && previousStatus === "pending" && ["open", "rejected"].includes(status)) {
+      const decision = status === "open" ? "approved" : "rejected";
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: report.userId,
+            type: `${reportType}-${decision}`,
+            title: `Your ${reportType} report was ${decision}`,
+            message: status === "open"
+              ? `Your report for "${report.itemName}" has been approved and is now visible to the community.`
+              : `Your report for "${report.itemName}" was not approved. Please review the details and submit an updated report if needed.`,
+          },
+        });
+      } catch (error) {
+        console.error("Report status was updated, but its moderation notification could not be created", error);
+        notificationWarning = "The report status was updated, but the reporter notification could not be saved. Apply pending database migrations and try again.";
+      }
+    }
+
+    return NextResponse.json({
+      reportType,
+      reportId,
+      status: report.status,
+      ...(notificationWarning ? { notificationWarning } : {}),
+    });
   } catch (error) {
     console.error("Failed to update report moderation", error);
     return NextResponse.json({ error: "Unable to update this report." }, { status: 500 });
