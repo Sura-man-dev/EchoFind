@@ -19,6 +19,7 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 2. Copy `.env.example` to `.env.local` and fill in the values. Keep real credentials out of Git.
 
    For Neon, use the current connection string from the intended project and branch, and verify that the endpoint is active. Keep `sslmode=require`; use the direct (non-pooled) connection string for migrations when Neon provides both pooled and direct URLs.
+   Set `DIRECT_URL` to that direct connection string. `DATABASE_URL` remains the pooled connection string used by the running app. If your provider has no separate direct endpoint, set `DIRECT_URL` to the same value as `DATABASE_URL`. Prisma CLI reads `.env`; if you keep app settings in `.env.local`, also define `DIRECT_URL` in `.env` (or export it before running Prisma commands).
 
 3. Generate the Prisma client and apply the included database migrations:
 
@@ -41,7 +42,8 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL` | Yes | PostgreSQL connection string; use Neon’s pooled endpoint for the running app |
+| `DIRECT_URL` | Yes | Direct PostgreSQL connection string used by Prisma generation and migrations; use Neon’s non-pooled endpoint when available |
 | `AUTH_SECRET` | Yes | Secret used by Auth.js |
 | `NEXTAUTH_URL` | Yes | App URL, such as `http://localhost:3000` |
 | `AUTH_TRUST_HOST` | Self-hosted production | Set to `true` when deployed behind a trusted proxy; Vercel sets this automatically |

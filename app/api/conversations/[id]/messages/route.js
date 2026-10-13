@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getDatabaseFailure } from "@/lib/database-errors";
 
 const messageSchema = z.object({
   body: z.string().trim().min(1, "Write a message before sending.").max(2000, "Messages must be 2,000 characters or fewer."),
@@ -66,7 +67,8 @@ export async function GET(_request, { params }) {
     });
   } catch (error) {
     console.error("Failed to load conversation messages", error);
-    return NextResponse.json({ error: "Unable to load this conversation." }, { status: 500 });
+    const failure = getDatabaseFailure(error, "Unable to load this conversation.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }
 
@@ -134,6 +136,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {
     console.error("Failed to send conversation message", error);
-    return NextResponse.json({ error: "Unable to send your message." }, { status: 500 });
+    const failure = getDatabaseFailure(error, "Unable to send your message.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }

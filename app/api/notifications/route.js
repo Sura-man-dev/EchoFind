@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getDatabaseFailure } from "@/lib/database-errors";
 
 export async function GET() {
   try {
@@ -21,7 +22,8 @@ export async function GET() {
     return NextResponse.json({ notifications, unreadCount });
   } catch (error) {
     console.error("Failed to load notifications", error);
-    return NextResponse.json({ error: "Unable to load notifications." }, { status: 500 });
+    const failure = getDatabaseFailure(error, "Unable to load notifications.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }
 
@@ -59,6 +61,7 @@ export async function PATCH(request) {
     return NextResponse.json({ success: true, updatedCount: result.count });
   } catch (error) {
     console.error("Failed to mark notifications read", error);
-    return NextResponse.json({ error: "Unable to update notifications." }, { status: 500 });
+    const failure = getDatabaseFailure(error, "Unable to update notifications.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }

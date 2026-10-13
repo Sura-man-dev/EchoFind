@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getDatabaseFailure } from "@/lib/database-errors";
 
 const createConversationSchema = z.object({
   reportType: z.enum(["lost", "found"]),
@@ -51,7 +52,8 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Failed to load conversations", error);
-    return NextResponse.json({ error: "Unable to load your conversations." }, { status: 500 });
+    const failure = getDatabaseFailure(error, "Unable to load your conversations.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }
 
@@ -110,6 +112,7 @@ export async function POST(request) {
     return NextResponse.json({ conversation }, { status: 200 });
   } catch (error) {
     console.error("Failed to start conversation", error);
-    return NextResponse.json({ error: "Unable to start a conversation." }, { status: 500 });
+    const failure = getDatabaseFailure(error, "Unable to start a conversation.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }
