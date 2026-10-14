@@ -63,6 +63,7 @@ export default function SignupModal({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [configuredProviders, setConfiguredProviders] = useState({});
   const [isMounted, setIsMounted] = useState(false);
+  const [canResendVerification, setCanResendVerification] = useState(false);
 
   const isSignup = mode === "signup";
   const isForgotPassword = mode === "forgot";
@@ -79,6 +80,18 @@ export default function SignupModal({
       new URLSearchParams(window.location.search).get("passwordReset") === "success"
     ) {
       setNotice("Your password was reset successfully. Sign in with your new password.");
+    }
+
+    if (show && mode === "login") {
+      const emailVerification = new URLSearchParams(window.location.search).get("emailVerification");
+
+      if (emailVerification === "success") {
+        setNotice("Your email is verified. You can now sign in.");
+      } else if (emailVerification === "invalid") {
+        setError("That verification link is invalid or has expired. Sign in to request a new one.");
+      } else if (emailVerification === "error") {
+        setError("We could not verify your email right now. Please try the link again later.");
+      }
     }
   }, [mode, show]);
 
@@ -131,6 +144,7 @@ export default function SignupModal({
         setNotice("");
         setShowPassword(false);
         setShowConfirmPassword(false);
+        setCanResendVerification(false);
         onClose?.();
       }
     };
@@ -167,10 +181,42 @@ export default function SignupModal({
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
+    if (name === "email") {
+      setCanResendVerification(false);
+    }
+
     setForm((current) => ({
       ...current,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleResendVerification = async () => {
+    setError("");
+    setNotice("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: form.email }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to send a verification email.");
+      }
+
+      setNotice(data.message);
+      setCanResendVerification(false);
+    } catch (resendError) {
+      setError(resendError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCredentialsSignIn = async () => {
@@ -181,6 +227,11 @@ export default function SignupModal({
     });
 
     if (!result?.ok || result.error) {
+      if (result?.code === "email_not_verified") {
+        setCanResendVerification(true);
+        throw new Error("Please verify your email before signing in.");
+      }
+
       if (result?.code === "service_unavailable" || result?.error !== "CredentialsSignin") {
         throw new Error("Sign-in is temporarily unavailable. Please try again shortly.");
       }
@@ -243,6 +294,15 @@ export default function SignupModal({
         if (!response.ok) {
           throw new Error(data.error || "Unable to create your account.");
         }
+
+        setForm({
+          ...initialFormState,
+          email: data.user.email,
+        });
+        setCanResendVerification(false);
+        setNotice(data.message);
+        onModeChange?.("login");
+        return;
       }
 
       await handleCredentialsSignIn();
@@ -278,7 +338,7 @@ export default function SignupModal({
       : "Welcome Back";
 
   const modalText = isSignup
-    ? "Create your EchoFind account to report and recover lost items."
+    ? "Create your EchoFind account. We will email you a link to verify your address."
     : isForgotPassword
       ? "Enter your email and we will send you a secure reset link."
       : "Log in to continue reporting and recovering lost items.";
@@ -498,6 +558,16 @@ export default function SignupModal({
 
           {error ? <p className={styles.errorText} role="alert">{error}</p> : null}
           {notice ? <p className={styles.noticeText} role="status">{notice}</p> : null}
+          {canResendVerification && !isSignup && !isForgotPassword ? (
+            <button
+              type="button"
+              className={styles.inlineLink}
+              onClick={handleResendVerification}
+              disabled={isSubmitting}
+            >
+              Resend verification email
+            </button>
+          ) : null}
 
           <button className={styles.primaryBtn} type="submit" disabled={isSubmitting}>
             {isSubmitting

@@ -20,6 +20,10 @@ class DatabaseUnavailableSignin extends CredentialsSignin {
   code = "service_unavailable";
 }
 
+class EmailNotVerifiedSignin extends CredentialsSignin {
+  code = "email_not_verified";
+}
+
 const providers = [];
 
 if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
@@ -86,6 +90,10 @@ providers.push(
 
       if (!isValidPassword) {
         return null;
+      }
+
+      if (!user.emailVerified) {
+        throw new EmailNotVerifiedSignin();
       }
 
       return {

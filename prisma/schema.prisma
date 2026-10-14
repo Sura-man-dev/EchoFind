@@ -9,23 +9,24 @@ datasource db {
 }
 
 model User {
-  id                    String                @id @default(cuid())
-  name                  String?
-  email                 String?               @unique
-  emailVerified         DateTime?
-  image                 String?
-  passwordHash          String?
-  role                  String                @default("user")
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  accounts              Account[]
-  lostReports           LostReport[]
-  foundReports          FoundReport[]
-  passwordResetTokens   PasswordResetToken[]
-  notifications         Notification[]
-  startedConversations  Conversation[]        @relation("ConversationStarter")
-  receivedConversations Conversation[]        @relation("ConversationRecipient")
-  sentMessages          ConversationMessage[] @relation("MessageSender")
+  id                      String                @id @default(cuid())
+  name                    String?
+  email                   String?               @unique
+  emailVerified           DateTime?
+  image                   String?
+  passwordHash            String?
+  role                    String                @default("user")
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  accounts                Account[]
+  lostReports             LostReport[]
+  foundReports            FoundReport[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  notifications           Notification[]
+  startedConversations    Conversation[]        @relation("ConversationStarter")
+  receivedConversations   Conversation[]        @relation("ConversationRecipient")
+  sentMessages            ConversationMessage[] @relation("MessageSender")
 }
 
 model LostReport {
@@ -167,6 +168,20 @@ model VerificationToken {
 }
 
 model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model EmailVerificationToken {
   id        String   @id @default(cuid())
   userId    String
   email     String

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/passwords";
+import { sendEmailVerificationEmail } from "@/lib/mailer";
+import { createRawToken, hashToken } from "@/lib/tokens";
 import { isTransientDatabaseError } from "@/lib/database-errors";
 
 const signupSchema = z
@@ -68,12 +70,25 @@ export async function POST(request) {
       },
     });
 
+    const rawToken = createRawToken();
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        email,
+        tokenHash: hashToken(rawToken),
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      },
+    });
+
+    await sendEmailVerificationEmail({ email, token: rawToken });
+
     return NextResponse.json({
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
       },
+      message: "Account created. Check your email to verify your account before signing in.",
     });
   } catch (error) {
     if (isTransientDatabaseError(error)) {

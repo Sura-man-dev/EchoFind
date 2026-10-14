@@ -55,7 +55,7 @@ EchoFind is a lost-and-found web app built with Next.js, Auth.js, Prisma, and Po
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No | Google sign-in credentials |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | No | GitHub sign-in credentials |
 | `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | No | Facebook sign-in credentials |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | No | SMTP settings for password-reset email |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Required in production | SMTP settings for verification and password-reset emails; in development, links are printed to the server console |
 | `SMTP_FROM` | No | Sender address for email; defaults to `SMTP_USER` |
 
 ## Useful commands
@@ -92,7 +92,7 @@ Gemini compares the found report with up to 50 open lost reports, using the item
 
 ### Authentication
 
-The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. Password-reset pages and Auth.js/signup endpoints remain public so account access can be restored or created. Session profile and role claims refresh from the database at most once per minute; if Prisma reports that the database is unreachable, an existing JWT session continues with its last-known claims until the database is available again. Signing in and database-backed features still require a working database connection.
+The original landing page (`/`) is public. Workspace pages and APIs require a signed-in account; visitors are redirected to `/login`, can create an account at `/register`, and are returned to the requested page after signing in. New accounts must verify their email from the link sent at registration before password sign-in; unverified users can request another link from the login form. The forgot-password form sends a single-use reset link that expires after 30 minutes. Password-reset pages and Auth.js/signup/verification endpoints remain public so account access can be restored or created. Configure SMTP in production to deliver verification and password-reset emails. Session profile and role claims refresh from the database at most once per minute; if Prisma reports that the database is unreachable, an existing JWT session continues with its last-known claims until the database is available again. Signing in and database-backed features still require a working database connection.
 
 ### Report review and notifications
 
